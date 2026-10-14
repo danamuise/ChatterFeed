@@ -12,7 +12,7 @@ class MockSource:
             "Another message just appeared.",
             "People are discussing today's news.",
             "This is a simulated social media post.",
-            "That idea is stupid.",
+            "That post contains homophobic language.",
             "Someone said they wanted to attack the other team.",
             "What the fuck is happening here?",
             "This contains example_slur so we can test solid-block redaction.",
