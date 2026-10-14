@@ -5,11 +5,11 @@ class TriggerHandler:
     """
     Prototype trigger handler.
 
-    For now this prints the detected categories. Later this is where
-    GPIO, motors, servos, solenoids, lights, sound, or other artwork
-    responses can be connected.
+    For now this method is a placeholder for future physical responses.
+    The console display prints trigger labels so they stay visually grouped
+    with the message that caused them.
     """
 
     def handle(self, result: ClassificationResult) -> None:
-        for category in result.categories:
-            print(f"[TRIGGER] {category.upper()}")
+        # Later: trigger GPIO, motors, servos, solenoids, lights, sound, etc.
+        pass
