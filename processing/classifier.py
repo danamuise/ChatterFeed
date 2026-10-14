@@ -23,6 +23,15 @@ class MessageClassifier:
         self.rules = {
             "violence": {"kill", "attack", "hurt", "shoot"},
             "bullying": {"idiot", "loser", "stupid"},
+            "sexually_explicit": {
+                "sex",
+                "sexual",
+                "nude",
+                "nudes",
+                "porn",
+                "pornography",
+                "xxx",
+            },
             # Placeholder only. Real slur detection will be added separately.
             "racism": {"example_slur"},
         }
