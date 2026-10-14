@@ -27,6 +27,7 @@ class MockSource:
 
             yield {
                 "source": "mock",
+                "subject": "mock",
                 "timestamp": datetime.now().isoformat(timespec="seconds"),
                 "text": random.choice(self.messages),
             }
