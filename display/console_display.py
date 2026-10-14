@@ -10,7 +10,7 @@ class ConsoleDisplay:
         result: ClassificationResult,
     ) -> None:
         print("=" * 70)
-        print(f"Source: {source}")
+        print(f"Subreddit: {source}")
         print(f"Time:   {timestamp}")
 
         if result.categories:
