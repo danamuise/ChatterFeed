@@ -14,6 +14,10 @@ class ConsoleDisplay:
         print(f"Subreddit: {source}")
         print(f"Message Subject: {subject}")
         print(f"Time:   {timestamp}")
+
+        for category in result.categories:
+            print(f"[TRIGGER] {category.upper()}")
+
         print()
         print(safe_text)
         print()
