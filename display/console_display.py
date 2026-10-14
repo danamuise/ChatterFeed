@@ -14,7 +14,7 @@ class ConsoleDisplay:
         print(f"Time:   {timestamp}")
 
         if result.categories:
-            print(f"Tags:   {', '.join(result.categories)}")
+            print(f"Message Subject: {', '.join(result.categories)}")
 
         print()
         print(safe_text)
