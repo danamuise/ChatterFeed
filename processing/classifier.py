@@ -22,7 +22,7 @@ class MessageClassifier:
     def __init__(self) -> None:
         self.rules = {
             "violence": {"kill", "attack", "hurt", "shoot"},
-            "bullying": {"idiot", "loser", "stupid"},
+            "homophobic": {"homophobic", "anti-gay", "anti gay"},
             "sexually_explicit": {
                 "sex",
                 "sexual",
