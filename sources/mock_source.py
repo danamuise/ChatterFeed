@@ -16,6 +16,7 @@ class MockSource:
             "Someone said they wanted to attack the other team.",
             "What the fuck is happening here?",
             "This contains example_slur so we can test solid-block redaction.",
+            "Someone posted explicit porn content.",
             "The conversation keeps moving.",
             "A new comment was posted.",
         ]
