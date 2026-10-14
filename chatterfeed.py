@@ -32,6 +32,7 @@ def main() -> None:
             # 4. Display only the sanitized copy.
             display.show(
                 source=message["source"],
+                subject=message["subject"],
                 timestamp=message["timestamp"],
                 safe_text=safe_text,
                 result=result,
