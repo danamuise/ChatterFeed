@@ -1,5 +1,5 @@
 # ChatterFeed
-##What would online discourse look like if language became gesture?
+## What would online discourse look like if language became gesture?
 
 ChatterFeed is a temporary, non-commercial artwork created by an independent artist. It uses publicly available Reddit posts and comments as live input for a physical, kinetic art installation. The project is not intended to generate revenue, build a commercial product, profile individual users, or create a permanent archive of Reddit content.
 
