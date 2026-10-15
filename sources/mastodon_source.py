@@ -15,7 +15,7 @@ class MastodonSource:
     def __init__(
         self,
         instance: str = "https://mastodon.social",
-        poll_seconds: float = 10.0,
+        poll_seconds: float = 5.0,
     ) -> None:
         self.instance = instance.rstrip("/")
         self.poll_seconds = poll_seconds
@@ -63,7 +63,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/0.7 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/0.8 (non-commercial art project)",
             },
         )
 
@@ -122,12 +122,11 @@ class MastodonSource:
             tag.get("name", "").lower()
             for tag in status.get("tags", [])
         }
-        matches = [
+        return [
             hashtag
             for hashtag in self.hashtags
             if hashtag.lower() in status_tags
         ]
-        return matches
 
     def stream(self):
         print(
@@ -136,26 +135,24 @@ class MastodonSource:
             + "\n"
         )
 
+        group_index = 0
+
         while True:
-            combined: list[dict] = []
-
             try:
-                for group_index, tags in enumerate(self.groups):
-                    statuses = self._fetch_group(group_index, tags)
+                tags = self.groups[group_index]
+                statuses = self._fetch_group(group_index, tags)
 
-                    if statuses:
-                        newest_id = str(
-                            max(int(status["id"]) for status in statuses)
-                        )
-                        self.since_ids[group_index] = newest_id
+                if statuses:
+                    newest_id = str(
+                        max(int(status["id"]) for status in statuses)
+                    )
+                    self.since_ids[group_index] = newest_id
 
-                    combined.extend(statuses)
-
-                combined.sort(
+                statuses.sort(
                     key=lambda status: status.get("created_at", "")
                 )
 
-                for status in combined:
+                for status in statuses:
                     status_id = status["id"]
 
                     if status_id in self.seen_ids:
@@ -198,4 +195,5 @@ class MastodonSource:
             ) as error:
                 print(f"[Mastodon connection error] {error}")
 
+            group_index = (group_index + 1) % len(self.groups)
             time.sleep(self.poll_seconds)
