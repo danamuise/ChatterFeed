@@ -45,8 +45,16 @@ class MastodonSource:
             "chat",
         ]
         self.since_ids: dict[str, str] = {}
+
+        # Keep duplicate detection bounded so a long-running installation
+        # does not accumulate an ever-growing set of post IDs.
+        self.max_seen_ids = 2000
         self.seen_ids: set[str] = set()
-        self.queue: deque[dict] = deque()
+        self.seen_id_order: deque[str] = deque()
+
+        # The torrent is transient. If fetching ever outruns display, discard
+        # the oldest queued posts rather than allowing memory to grow forever.
+        self.queue: deque[dict] = deque(maxlen=500)
         self.last_subject: str | None = None
 
     @staticmethod
@@ -63,7 +71,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.0 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.1 (non-commercial art project)",
             },
         )
 
@@ -113,6 +121,17 @@ class MastodonSource:
         )
         return self._request_json(url)
 
+    def _remember_seen_id(self, status_id: str) -> None:
+        if status_id in self.seen_ids:
+            return
+
+        self.seen_ids.add(status_id)
+        self.seen_id_order.append(status_id)
+
+        while len(self.seen_id_order) > self.max_seen_ids:
+            expired_id = self.seen_id_order.popleft()
+            self.seen_ids.discard(expired_id)
+
     def _queue_statuses(self, hashtag: str, statuses: list[dict]) -> None:
         if statuses:
             newest_id = str(
@@ -130,7 +149,7 @@ class MastodonSource:
             if status_id in self.seen_ids:
                 continue
 
-            self.seen_ids.add(status_id)
+            self._remember_seen_id(status_id)
             text = self._plain_text(status.get("content", ""))
 
             if not text and status.get("reblog"):
