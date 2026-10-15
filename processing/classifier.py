@@ -12,36 +12,12 @@ class ClassificationResult:
 
 class MessageClassifier:
     """
-    Temporary rule-based classifier for the prototype.
+    Placeholder classifier for the current ChatterFeed prototype.
 
-    This is intentionally simple. Later, this module can be replaced with
-    a more capable local or remote text classifier without changing the
-    rest of ChatterFeed.
+    Keyword-based detection has been removed. This module is intentionally
+    neutral until it is replaced by the new context-aware AI interpretation
+    strategy.
     """
 
-    def __init__(self) -> None:
-        self.rules = {
-            "violence": {"kill", "attack", "hurt", "shoot"},
-            "homophobic": {"homophobic", "anti-gay", "anti gay"},
-            "sexually_explicit": {
-                "sex",
-                "sexual",
-                "nude",
-                "nudes",
-                "porn",
-                "pornography",
-                "xxx",
-            },
-            # Placeholder only. Real slur detection will be added separately.
-            "racism": {"example_slur"},
-        }
-
     def analyze(self, text: str) -> ClassificationResult:
-        lowered = text.lower()
-        categories = []
-
-        for category, keywords in self.rules.items():
-            if any(keyword in lowered for keyword in keywords):
-                categories.append(category)
-
-        return ClassificationResult(categories=categories)
+        return ClassificationResult(categories=[])
