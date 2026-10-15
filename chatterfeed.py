@@ -6,13 +6,11 @@ from sources.mastodon_source import MastodonSource
 
 
 def main() -> None:
-    hashtag = "art"
-
-    print("ChatterFeed v0.3")
-    print(f"Listening to mastodon.social #{hashtag}...")
+    print("ChatterFeed v0.4")
+    print("Listening to mastodon.social top 5 trending hashtags...")
     print("Press Ctrl+C to stop.\n")
 
-    source = MastodonSource(hashtag=hashtag)
+    source = MastodonSource(tag_count=5)
     classifier = MessageClassifier()
     sanitizer = MessageSanitizer()
     triggers = TriggerHandler()
