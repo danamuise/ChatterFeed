@@ -5,12 +5,13 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import deque
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 
 class MastodonSource:
-    """Poll one Mastodon hashtag at a time in round-robin order."""
+    """Poll one Mastodon hashtag at a time and emit one queued post per cycle."""
 
     def __init__(
         self,
@@ -44,6 +45,7 @@ class MastodonSource:
         ]
         self.since_ids: dict[str, str] = {}
         self.seen_ids: set[str] = set()
+        self.queue: deque[dict] = deque()
 
     @staticmethod
     def _plain_text(content: str) -> str:
@@ -59,7 +61,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/0.9 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.0 (non-commercial art project)",
             },
         )
 
@@ -109,6 +111,48 @@ class MastodonSource:
         )
         return self._request_json(url)
 
+    def _queue_statuses(self, hashtag: str, statuses: list[dict]) -> None:
+        if statuses:
+            newest_id = str(
+                max(int(status["id"]) for status in statuses)
+            )
+            self.since_ids[hashtag] = newest_id
+
+        statuses.sort(
+            key=lambda status: status.get("created_at", "")
+        )
+
+        for status in statuses:
+            status_id = status["id"]
+
+            if status_id in self.seen_ids:
+                continue
+
+            self.seen_ids.add(status_id)
+            text = self._plain_text(status.get("content", ""))
+
+            if not text and status.get("reblog"):
+                text = self._plain_text(
+                    status["reblog"].get("content", "")
+                )
+
+            if not text:
+                continue
+
+            created_at = status.get(
+                "created_at",
+                datetime.now().isoformat(timespec="seconds"),
+            )
+
+            self.queue.append(
+                {
+                    "source": "mastodon.social",
+                    "subject": f"#{hashtag}",
+                    "timestamp": created_at,
+                    "text": text,
+                }
+            )
+
     def stream(self):
         print(
             "Hashtags: "
@@ -123,45 +167,7 @@ class MastodonSource:
 
             try:
                 statuses = self._fetch_tag(hashtag)
-
-                if statuses:
-                    newest_id = str(
-                        max(int(status["id"]) for status in statuses)
-                    )
-                    self.since_ids[hashtag] = newest_id
-
-                statuses.sort(
-                    key=lambda status: status.get("created_at", "")
-                )
-
-                for status in statuses:
-                    status_id = status["id"]
-
-                    if status_id in self.seen_ids:
-                        continue
-
-                    self.seen_ids.add(status_id)
-                    text = self._plain_text(status.get("content", ""))
-
-                    if not text and status.get("reblog"):
-                        text = self._plain_text(
-                            status["reblog"].get("content", "")
-                        )
-
-                    if not text:
-                        continue
-
-                    created_at = status.get(
-                        "created_at",
-                        datetime.now().isoformat(timespec="seconds"),
-                    )
-
-                    yield {
-                        "source": "mastodon.social",
-                        "subject": f"#{hashtag}",
-                        "timestamp": created_at,
-                        "text": text,
-                    }
+                self._queue_statuses(hashtag, statuses)
 
             except (
                 urllib.error.URLError,
@@ -169,6 +175,9 @@ class MastodonSource:
                 json.JSONDecodeError,
             ) as error:
                 print(f"[Mastodon connection error] {error}")
+
+            if self.queue:
+                yield self.queue.popleft()
 
             hashtag_index = (hashtag_index + 1) % len(self.hashtags)
             time.sleep(self.poll_seconds)
