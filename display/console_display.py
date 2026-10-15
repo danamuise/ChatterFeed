@@ -11,8 +11,8 @@ class ConsoleDisplay:
         result: ClassificationResult,
     ) -> None:
         print("=" * 70)
-        print(f"Subreddit: {source}")
-        print(f"Message Subject: {subject}")
+        print(f"Source: {source}")
+        print(f"Feed:   {subject}")
         print(f"Time:   {timestamp}")
 
         for category in result.categories:
