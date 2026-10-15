@@ -12,7 +12,7 @@ from email.utils import parsedate_to_datetime
 
 
 class MastodonSource:
-    """Poll one Mastodon hashtag at a time and emit one queued post per cycle."""
+    """Poll hashtags and public thread replies one request at a time."""
 
     def __init__(
         self,
@@ -57,6 +57,11 @@ class MastodonSource:
         self.queue: deque[dict] = deque(maxlen=500)
         self.last_subject: str | None = None
 
+        # At most one thread-context request is pending at a time. This keeps
+        # the network pattern strictly sequential:
+        # hashtag request -> thread request -> next hashtag request.
+        self.pending_thread: dict | None = None
+
     @staticmethod
     def _plain_text(content: str) -> str:
         content = re.sub(r"<br\s*/?>", "\n", content, flags=re.IGNORECASE)
@@ -66,12 +71,12 @@ class MastodonSource:
         lines = [line.strip() for line in content.splitlines()]
         return "\n".join(line for line in lines if line).strip()
 
-    def _request_json(self, url: str) -> list[dict]:
+    def _request_json(self, url: str):
         request = urllib.request.Request(
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.3 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.4 (non-commercial art project)",
             },
         )
 
@@ -102,7 +107,7 @@ class MastodonSource:
                     f"{int(wait_seconds)} seconds..."
                 )
                 time.sleep(wait_seconds)
-                return []
+                return None
 
             raise
 
@@ -119,7 +124,13 @@ class MastodonSource:
             f"{self.instance}/api/v1/timelines/tag/"
             f"{encoded_tag}?{query}"
         )
-        return self._request_json(url)
+        result = self._request_json(url)
+        return result if isinstance(result, list) else []
+
+    def _fetch_thread_context(self, status_id: str) -> dict:
+        url = f"{self.instance}/api/v1/statuses/{status_id}/context"
+        result = self._request_json(url)
+        return result if isinstance(result, dict) else {}
 
     @staticmethod
     def _should_ignore(text: str) -> bool:
@@ -142,6 +153,44 @@ class MastodonSource:
             expired_id = self.seen_id_order.popleft()
             self.seen_ids.discard(expired_id)
 
+    def _queue_one_status(self, subject: str, status: dict) -> None:
+        status_id = status.get("id")
+        if not status_id or status_id in self.seen_ids:
+            return
+
+        self._remember_seen_id(status_id)
+
+        text = self._plain_text(status.get("content", ""))
+
+        if not text and status.get("reblog"):
+            text = self._plain_text(
+                status["reblog"].get("content", "")
+            )
+
+        if not text:
+            return
+
+        language = status.get("language")
+        if language and language.lower() != "en":
+            return
+
+        if self._should_ignore(text):
+            return
+
+        created_at = status.get(
+            "created_at",
+            datetime.now().isoformat(timespec="seconds"),
+        )
+
+        self.queue.append(
+            {
+                "source": "mastodon.social",
+                "subject": subject,
+                "timestamp": created_at,
+                "text": text,
+            }
+        )
+
     def _queue_statuses(self, hashtag: str, statuses: list[dict]) -> None:
         if statuses:
             newest_id = str(
@@ -154,42 +203,37 @@ class MastodonSource:
         )
 
         for status in statuses:
-            status_id = status["id"]
+            self._queue_one_status(f"#{hashtag}", status)
 
-            if status_id in self.seen_ids:
-                continue
+    def _choose_thread_candidate(
+        self,
+        hashtag: str,
+        statuses: list[dict],
+    ) -> None:
+        candidates = [
+            status
+            for status in statuses
+            if int(status.get("replies_count", 0) or 0) > 0
+        ]
 
-            self._remember_seen_id(status_id)
-            text = self._plain_text(status.get("content", ""))
+        if not candidates:
+            self.pending_thread = None
+            return
 
-            if not text and status.get("reblog"):
-                text = self._plain_text(
-                    status["reblog"].get("content", "")
-                )
+        chosen = random.choice(candidates)
+        self.pending_thread = {
+            "status_id": chosen["id"],
+            "subject": f"#{hashtag}",
+        }
 
-            if not text:
-                continue
+    def _queue_thread_replies(self, subject: str, context: dict) -> None:
+        descendants = context.get("descendants", [])
+        if not isinstance(descendants, list):
+            return
 
-            language = status.get("language")
-            if language and language.lower() != "en":
-                continue
-
-            if self._should_ignore(text):
-                continue
-
-            created_at = status.get(
-                "created_at",
-                datetime.now().isoformat(timespec="seconds"),
-            )
-
-            self.queue.append(
-                {
-                    "source": "mastodon.social",
-                    "subject": f"#{hashtag}",
-                    "timestamp": created_at,
-                    "text": text,
-                }
-            )
+        random.shuffle(descendants)
+        for reply in descendants:
+            self._queue_one_status(subject, reply)
 
     def _next_queued_message(self) -> dict | None:
         if not self.queue:
@@ -220,13 +264,32 @@ class MastodonSource:
         )
 
         hashtag_index = 0
+        fetch_thread_next = False
 
         while True:
-            hashtag = self.hashtags[hashtag_index]
-
             try:
-                statuses = self._fetch_tag(hashtag)
-                self._queue_statuses(hashtag, statuses)
+                if fetch_thread_next and self.pending_thread:
+                    context = self._fetch_thread_context(
+                        self.pending_thread["status_id"]
+                    )
+                    self._queue_thread_replies(
+                        self.pending_thread["subject"],
+                        context,
+                    )
+                    self.pending_thread = None
+                    fetch_thread_next = False
+
+                else:
+                    hashtag = self.hashtags[hashtag_index]
+                    statuses = self._fetch_tag(hashtag)
+                    self._queue_statuses(hashtag, statuses)
+                    self._choose_thread_candidate(hashtag, statuses)
+
+                    hashtag_index = (
+                        hashtag_index + 1
+                    ) % len(self.hashtags)
+
+                    fetch_thread_next = self.pending_thread is not None
 
             except (
                 urllib.error.URLError,
@@ -234,10 +297,11 @@ class MastodonSource:
                 json.JSONDecodeError,
             ) as error:
                 print(f"[Mastodon connection error] {error}")
+                self.pending_thread = None
+                fetch_thread_next = False
 
             message = self._next_queued_message()
             if message:
                 yield message
 
-            hashtag_index = (hashtag_index + 1) % len(self.hashtags)
             time.sleep(self.poll_seconds)
