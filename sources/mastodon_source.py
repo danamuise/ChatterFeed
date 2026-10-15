@@ -78,7 +78,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.6 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.7 (non-commercial art project)",
             },
         )
 
@@ -340,8 +340,25 @@ class MastodonSource:
                 else:
                     hashtag = self.hashtags[hashtag_index]
                     statuses = self._fetch_tag(hashtag)
-                    self._queue_statuses(hashtag, statuses)
+
+                    if statuses:
+                        newest_id = str(
+                            max(int(status["id"]) for status in statuses)
+                        )
+                        self.since_ids[hashtag] = newest_id
+
                     self._choose_thread_candidate(hashtag, statuses)
+
+                    if self.pending_thread is None and statuses:
+                        # No conversation found in this batch. Allow only one
+                        # standalone post through as a fallback so headlines
+                        # cannot dominate the torrent.
+                        fallback = random.choice(statuses)
+                        self._queue_one_status(
+                            f"#{hashtag}",
+                            fallback,
+                            False,
+                        )
 
                     hashtag_index = (
                         hashtag_index + 1
