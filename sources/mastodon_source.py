@@ -78,7 +78,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.7 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.8 (non-commercial art project)",
             },
         )
 
@@ -112,6 +112,11 @@ class MastodonSource:
                 return None
 
             raise
+
+    def _fetch_trending_statuses(self) -> list[dict]:
+        url = f"{self.instance}/api/v1/trends/statuses?limit=40"
+        result = self._request_json(url)
+        return result if isinstance(result, list) else []
 
     def _fetch_tag(self, hashtag: str) -> list[dict]:
         params: list[tuple[str, str]] = [("limit", "20")]
@@ -243,7 +248,7 @@ class MastodonSource:
 
     def _choose_thread_candidate(
         self,
-        hashtag: str,
+        subject: str,
         statuses: list[dict],
     ) -> None:
         candidates = [
@@ -259,7 +264,7 @@ class MastodonSource:
         chosen = random.choice(candidates)
         self.pending_thread = {
             "status_id": chosen["id"],
-            "subject": f"#{hashtag}",
+            "subject": subject,
         }
 
     def _queue_thread_replies(self, subject: str, context: dict) -> None:
@@ -316,13 +321,17 @@ class MastodonSource:
 
     def stream(self):
         print(
-            "Hashtags: "
+            "Conversation discovery: trending Mastodon statuses + thread context"
+        )
+        print(
+            "Fallback hashtags: "
             + ", ".join(f"#{tag}" for tag in self.hashtags)
             + "\n"
         )
 
         hashtag_index = 0
         fetch_thread_next = False
+        use_hashtag_fallback = False
 
         while True:
             try:
@@ -338,33 +347,45 @@ class MastodonSource:
                     fetch_thread_next = False
 
                 else:
-                    hashtag = self.hashtags[hashtag_index]
-                    statuses = self._fetch_tag(hashtag)
+                    # Primary discovery: public statuses with unusually high
+                    # interaction. These are more likely to have replies than
+                    # random hashtag posts.
+                    statuses = self._fetch_trending_statuses()
+                    self._choose_thread_candidate("#conversation", statuses)
 
-                    if statuses:
-                        newest_id = str(
-                            max(int(status["id"]) for status in statuses)
-                        )
-                        self.since_ids[hashtag] = newest_id
+                    if self.pending_thread is not None:
+                        fetch_thread_next = True
+                        use_hashtag_fallback = False
+                    else:
+                        # If the trending-status discovery yields no replied-to
+                        # posts, fall back to one of the selected hashtags.
+                        hashtag = self.hashtags[hashtag_index]
+                        tag_statuses = self._fetch_tag(hashtag)
 
-                    self._choose_thread_candidate(hashtag, statuses)
+                        if tag_statuses:
+                            newest_id = str(
+                                max(int(status["id"]) for status in tag_statuses)
+                            )
+                            self.since_ids[hashtag] = newest_id
 
-                    if self.pending_thread is None and statuses:
-                        # No conversation found in this batch. Allow only one
-                        # standalone post through as a fallback so headlines
-                        # cannot dominate the torrent.
-                        fallback = random.choice(statuses)
-                        self._queue_one_status(
+                        self._choose_thread_candidate(
                             f"#{hashtag}",
-                            fallback,
-                            False,
+                            tag_statuses,
                         )
 
-                    hashtag_index = (
-                        hashtag_index + 1
-                    ) % len(self.hashtags)
+                        if self.pending_thread is None and tag_statuses:
+                            fallback = random.choice(tag_statuses)
+                            self._queue_one_status(
+                                f"#{hashtag}",
+                                fallback,
+                                False,
+                            )
 
-                    fetch_thread_next = self.pending_thread is not None
+                        hashtag_index = (
+                            hashtag_index + 1
+                        ) % len(self.hashtags)
+                        fetch_thread_next = self.pending_thread is not None
+                        use_hashtag_fallback = True
 
             except (
                 urllib.error.URLError,
