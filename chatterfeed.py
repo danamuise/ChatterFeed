@@ -19,19 +19,19 @@ def keyboard_commands() -> None:
             command = input().strip().lower()
             if command in {"c", "clear"}:
                 clear_screen()
-                print("ChatterFeed v0.5")
-                print("Listening to mastodon.social top 5 trending hashtags...")
+                print("ChatterFeed v0.6")
+                print("Listening to selected mastodon.social hashtags...")
                 print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
         except (EOFError, KeyboardInterrupt):
             return
 
 
 def main() -> None:
-    print("ChatterFeed v0.5")
-    print("Listening to mastodon.social top 5 trending hashtags...")
+    print("ChatterFeed v0.6")
+    print("Listening to selected mastodon.social hashtags...")
     print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
 
-    source = MastodonSource(tag_count=5)
+    source = MastodonSource()
     classifier = MessageClassifier()
     sanitizer = MessageSanitizer()
     triggers = TriggerHandler()
@@ -47,16 +47,10 @@ def main() -> None:
         for message in source.stream():
             raw_text = message["text"]
 
-            # 1. Analyze the original raw message.
             result = classifier.analyze(raw_text)
-
-            # 2. Trigger any related responses using the classification.
             triggers.handle(result)
-
-            # 3. Create a sanitized copy for public display.
             safe_text = sanitizer.clean(raw_text)
 
-            # 4. Display only the sanitized copy.
             display.show(
                 source=message["source"],
                 subject=message["subject"],
@@ -64,8 +58,6 @@ def main() -> None:
                 safe_text=safe_text,
                 result=result,
             )
-
-            # The raw message is not stored anywhere by ChatterFeed.
 
     except KeyboardInterrupt:
         print("\nChatterFeed stopped.")
