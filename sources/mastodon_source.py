@@ -2,6 +2,7 @@ import html
 import json
 import re
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -63,7 +64,7 @@ class MastodonSource:
 
                 if statuses:
                     # IDs are sortable decimal strings on Mastodon.
-                    newest_id = max(status["id"] for status in statuses)
+                    newest_id = str(max(int(status["id"]) for status in statuses))
                     self.since_id = newest_id
 
                     # API returns newest first; display oldest first so the
