@@ -2,15 +2,17 @@ from display.console_display import ConsoleDisplay
 from processing.classifier import MessageClassifier
 from processing.sanitizer import MessageSanitizer
 from responses.triggers import TriggerHandler
-from sources.mock_source import MockSource
+from sources.mastodon_source import MastodonSource
 
 
 def main() -> None:
-    print("ChatterFeed v0.2")
-    print("Listening for messages...")
+    hashtag = "art"
+
+    print("ChatterFeed v0.3")
+    print(f"Listening to mastodon.social #{hashtag}...")
     print("Press Ctrl+C to stop.\n")
 
-    source = MockSource()
+    source = MastodonSource(hashtag=hashtag)
     classifier = MessageClassifier()
     sanitizer = MessageSanitizer()
     triggers = TriggerHandler()
