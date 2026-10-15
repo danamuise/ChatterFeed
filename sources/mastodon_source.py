@@ -10,7 +10,7 @@ from email.utils import parsedate_to_datetime
 
 
 class MastodonSource:
-    """Poll a fixed set of Mastodon hashtags and yield new statuses."""
+    """Poll one Mastodon hashtag at a time in round-robin order."""
 
     def __init__(
         self,
@@ -42,11 +42,7 @@ class MastodonSource:
             "thoughts",
             "chat",
         ]
-        self.groups = [
-            self.hashtags[i : i + 4]
-            for i in range(0, len(self.hashtags), 4)
-        ]
-        self.since_ids: dict[int, str] = {}
+        self.since_ids: dict[str, str] = {}
         self.seen_ids: set[str] = set()
 
     @staticmethod
@@ -63,7 +59,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/0.8 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/0.9 (non-commercial art project)",
             },
         )
 
@@ -98,35 +94,20 @@ class MastodonSource:
 
             raise
 
-    def _fetch_group(self, group_index: int, tags: list[str]) -> list[dict]:
-        primary = tags[0]
-        params: list[tuple[str, str]] = [("limit", "40")]
+    def _fetch_tag(self, hashtag: str) -> list[dict]:
+        params: list[tuple[str, str]] = [("limit", "20")]
 
-        for tag in tags[1:]:
-            params.append(("any[]", tag))
-
-        since_id = self.since_ids.get(group_index)
+        since_id = self.since_ids.get(hashtag)
         if since_id:
             params.append(("since_id", since_id))
 
-        encoded_tag = urllib.parse.quote(primary, safe="")
+        encoded_tag = urllib.parse.quote(hashtag, safe="")
         query = urllib.parse.urlencode(params)
         url = (
             f"{self.instance}/api/v1/timelines/tag/"
             f"{encoded_tag}?{query}"
         )
         return self._request_json(url)
-
-    def _matched_hashtags(self, status: dict) -> list[str]:
-        status_tags = {
-            tag.get("name", "").lower()
-            for tag in status.get("tags", [])
-        }
-        return [
-            hashtag
-            for hashtag in self.hashtags
-            if hashtag.lower() in status_tags
-        ]
 
     def stream(self):
         print(
@@ -135,18 +116,19 @@ class MastodonSource:
             + "\n"
         )
 
-        group_index = 0
+        hashtag_index = 0
 
         while True:
+            hashtag = self.hashtags[hashtag_index]
+
             try:
-                tags = self.groups[group_index]
-                statuses = self._fetch_group(group_index, tags)
+                statuses = self._fetch_tag(hashtag)
 
                 if statuses:
                     newest_id = str(
                         max(int(status["id"]) for status in statuses)
                     )
-                    self.since_ids[group_index] = newest_id
+                    self.since_ids[hashtag] = newest_id
 
                 statuses.sort(
                     key=lambda status: status.get("created_at", "")
@@ -169,13 +151,6 @@ class MastodonSource:
                     if not text:
                         continue
 
-                    matches = self._matched_hashtags(status)
-                    subject = (
-                        ", ".join(f"#{tag}" for tag in matches)
-                        if matches
-                        else "#unknown"
-                    )
-
                     created_at = status.get(
                         "created_at",
                         datetime.now().isoformat(timespec="seconds"),
@@ -183,7 +158,7 @@ class MastodonSource:
 
                     yield {
                         "source": "mastodon.social",
-                        "subject": subject,
+                        "subject": f"#{hashtag}",
                         "timestamp": created_at,
                         "text": text,
                     }
@@ -195,5 +170,5 @@ class MastodonSource:
             ) as error:
                 print(f"[Mastodon connection error] {error}")
 
-            group_index = (group_index + 1) % len(self.groups)
+            hashtag_index = (hashtag_index + 1) % len(self.hashtags)
             time.sleep(self.poll_seconds)
