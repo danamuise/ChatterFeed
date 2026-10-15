@@ -36,6 +36,11 @@ class MastodonSource:
             "feminism",
             "progressive",
             "religion",
+            "mastodon",
+            "fediverse",
+            "life",
+            "thoughts",
+            "chat",
         ]
         self.groups = [
             self.hashtags[i : i + 4]
