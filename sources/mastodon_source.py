@@ -71,7 +71,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.1 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.2 (non-commercial art project)",
             },
         )
 
@@ -121,6 +121,16 @@ class MastodonSource:
         )
         return self._request_json(url)
 
+    @staticmethod
+    def _should_ignore(text: str) -> bool:
+        if len(text) >= 1000:
+            return True
+
+        url_count = len(
+            re.findall(r"https?://\S+", text, flags=re.IGNORECASE)
+        )
+        return url_count > 2
+
     def _remember_seen_id(self, status_id: str) -> None:
         if status_id in self.seen_ids:
             return
@@ -158,6 +168,9 @@ class MastodonSource:
                 )
 
             if not text:
+                continue
+
+            if self._should_ignore(text):
                 continue
 
             created_at = status.get(
