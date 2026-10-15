@@ -71,7 +71,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.2 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.3 (non-commercial art project)",
             },
         )
 
@@ -168,6 +168,10 @@ class MastodonSource:
                 )
 
             if not text:
+                continue
+
+            language = status.get("language")
+            if language and language.lower() != "en":
                 continue
 
             if self._should_ignore(text):
