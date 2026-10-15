@@ -76,7 +76,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.4 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.5 (non-commercial art project)",
             },
         )
 
@@ -133,8 +133,34 @@ class MastodonSource:
         return result if isinstance(result, dict) else {}
 
     @staticmethod
-    def _should_ignore(text: str) -> bool:
+    def _contains_non_latin_script(text: str) -> bool:
+        # Mastodon's language metadata is not always present or accurate.
+        # Reject posts containing a meaningful amount of non-Latin script
+        # so obvious Japanese/Chinese/Korean/Cyrillic/Arabic/etc. text does
+        # not enter the English-only torrent.
+        non_latin_patterns = [
+            r"[\u3040-\u30ff]",  # Hiragana + Katakana
+            r"[\u3400-\u4dbf\u4e00-\u9fff]",  # CJK ideographs
+            r"[\uac00-\ud7af]",  # Hangul
+            r"[\u0400-\u04ff]",  # Cyrillic
+            r"[\u0590-\u05ff]",  # Hebrew
+            r"[\u0600-\u06ff]",  # Arabic
+            r"[\u0900-\u097f]",  # Devanagari
+            r"[\u0e00-\u0e7f]",  # Thai
+        ]
+
+        count = 0
+        for pattern in non_latin_patterns:
+            count += len(re.findall(pattern, text))
+
+        return count >= 4
+
+    @classmethod
+    def _should_ignore(cls, text: str) -> bool:
         if len(text) >= 1000:
+            return True
+
+        if cls._contains_non_latin_script(text):
             return True
 
         url_count = len(
