@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class MastodonSource:
-    """Poll the top trending Mastodon hashtags and yield new statuses."""
+    """Poll required and trending Mastodon hashtags and yield new statuses."""
 
     def __init__(
         self,
@@ -20,7 +20,8 @@ class MastodonSource:
         self.instance = instance.rstrip("/")
         self.tag_count = tag_count
         self.poll_seconds = poll_seconds
-        self.hashtags = self._fetch_trending_hashtags()
+        self.required_hashtags = ["politics", "humanrights"]
+        self.hashtags = self._build_hashtag_list()
         self.since_ids: dict[str, str] = {}
         self.seen_ids: set[str] = set()
 
@@ -38,16 +39,29 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/0.4 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/0.5 (non-commercial art project)",
             },
         )
         with urllib.request.urlopen(request, timeout=15) as response:
             return json.loads(response.read().decode("utf-8"))
 
     def _fetch_trending_hashtags(self) -> list[str]:
-        url = f"{self.instance}/api/v1/trends/tags?limit={self.tag_count}"
+        # Request extra candidates so required tags can be skipped if duplicated.
+        url = f"{self.instance}/api/v1/trends/tags?limit=20"
         tags = self._request_json(url)
-        return [tag["name"] for tag in tags[: self.tag_count]]
+        return [tag["name"] for tag in tags]
+
+    def _build_hashtag_list(self) -> list[str]:
+        hashtags = list(self.required_hashtags)
+
+        for tag in self._fetch_trending_hashtags():
+            if tag.lower() in {existing.lower() for existing in hashtags}:
+                continue
+            hashtags.append(tag)
+            if len(hashtags) >= self.tag_count:
+                break
+
+        return hashtags
 
     def _fetch_tag(self, hashtag: str) -> list[dict]:
         params = {"limit": "20"}
@@ -65,7 +79,7 @@ class MastodonSource:
 
     def stream(self):
         print(
-            "Trending hashtags: "
+            "Hashtags: "
             + ", ".join(f"#{tag}" for tag in self.hashtags)
             + "\n"
         )
@@ -91,7 +105,7 @@ class MastodonSource:
                             }
                         )
 
-                # Sort all five feeds by timestamp so they appear as one
+                # Sort all feeds by timestamp so they appear as one
                 # chronological ChatterFeed stream.
                 combined.sort(
                     key=lambda item: item["status"].get("created_at", "")
