@@ -1,5 +1,6 @@
 import html
 import json
+import random
 import re
 import time
 import urllib.error
@@ -46,6 +47,7 @@ class MastodonSource:
         self.since_ids: dict[str, str] = {}
         self.seen_ids: set[str] = set()
         self.queue: deque[dict] = deque()
+        self.last_subject: str | None = None
 
     @staticmethod
     def _plain_text(content: str) -> str:
@@ -153,6 +155,27 @@ class MastodonSource:
                 }
             )
 
+    def _next_queued_message(self) -> dict | None:
+        if not self.queue:
+            return None
+
+        eligible_indexes = [
+            index
+            for index, message in enumerate(self.queue)
+            if message["subject"] != self.last_subject
+        ]
+
+        if not eligible_indexes:
+            eligible_indexes = list(range(len(self.queue)))
+
+        chosen_index = random.choice(eligible_indexes)
+        self.queue.rotate(-chosen_index)
+        message = self.queue.popleft()
+        self.queue.rotate(chosen_index)
+
+        self.last_subject = message["subject"]
+        return message
+
     def stream(self):
         print(
             "Hashtags: "
@@ -176,8 +199,9 @@ class MastodonSource:
             ) as error:
                 print(f"[Mastodon connection error] {error}")
 
-            if self.queue:
-                yield self.queue.popleft()
+            message = self._next_queued_message()
+            if message:
+                yield message
 
             hashtag_index = (hashtag_index + 1) % len(self.hashtags)
             time.sleep(self.poll_seconds)
