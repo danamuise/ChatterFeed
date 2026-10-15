@@ -52,10 +52,12 @@ class MastodonSource:
         self.seen_ids: set[str] = set()
         self.seen_id_order: deque[str] = deque()
 
-        # The torrent is transient. If fetching ever outruns display, discard
-        # the oldest queued posts rather than allowing memory to grow forever.
-        self.queue: deque[dict] = deque(maxlen=500)
+        # Keep standalone posts and thread replies separate so replies can
+        # dominate the torrent without allowing memory to grow forever.
+        self.standalone_queue: deque[dict] = deque(maxlen=300)
+        self.thread_queue: deque[dict] = deque(maxlen=300)
         self.last_subject: str | None = None
+        self.thread_display_count = 0
 
         # At most one thread-context request is pending at a time. This keeps
         # the network pattern strictly sequential:
@@ -76,7 +78,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.5 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.6 (non-commercial art project)",
             },
         )
 
@@ -179,7 +181,12 @@ class MastodonSource:
             expired_id = self.seen_id_order.popleft()
             self.seen_ids.discard(expired_id)
 
-    def _queue_one_status(self, subject: str, status: dict) -> None:
+    def _queue_one_status(
+        self,
+        subject: str,
+        status: dict,
+        is_thread_reply: bool = False,
+    ) -> None:
         status_id = status.get("id")
         if not status_id or status_id in self.seen_ids:
             return
@@ -208,14 +215,17 @@ class MastodonSource:
             datetime.now().isoformat(timespec="seconds"),
         )
 
-        self.queue.append(
-            {
-                "source": "mastodon.social",
-                "subject": subject,
-                "timestamp": created_at,
-                "text": text,
-            }
-        )
+        message = {
+            "source": "mastodon.social",
+            "subject": subject,
+            "timestamp": created_at,
+            "text": text,
+        }
+
+        if is_thread_reply:
+            self.thread_queue.append(message)
+        else:
+            self.standalone_queue.append(message)
 
     def _queue_statuses(self, hashtag: str, statuses: list[dict]) -> None:
         if statuses:
@@ -229,7 +239,7 @@ class MastodonSource:
         )
 
         for status in statuses:
-            self._queue_one_status(f"#{hashtag}", status)
+            self._queue_one_status(f"#{hashtag}", status, False)
 
     def _choose_thread_candidate(
         self,
@@ -259,27 +269,49 @@ class MastodonSource:
 
         random.shuffle(descendants)
         for reply in descendants:
-            self._queue_one_status(subject, reply)
+            self._queue_one_status(subject, reply, True)
 
-    def _next_queued_message(self) -> dict | None:
-        if not self.queue:
+    def _pop_random_message(self, queue: deque[dict]) -> dict | None:
+        if not queue:
             return None
 
         eligible_indexes = [
             index
-            for index, message in enumerate(self.queue)
+            for index, message in enumerate(queue)
             if message["subject"] != self.last_subject
         ]
 
         if not eligible_indexes:
-            eligible_indexes = list(range(len(self.queue)))
+            eligible_indexes = list(range(len(queue)))
 
         chosen_index = random.choice(eligible_indexes)
-        self.queue.rotate(-chosen_index)
-        message = self.queue.popleft()
-        self.queue.rotate(chosen_index)
+        queue.rotate(-chosen_index)
+        message = queue.popleft()
+        queue.rotate(chosen_index)
+        return message
 
-        self.last_subject = message["subject"]
+    def _next_queued_message(self) -> dict | None:
+        message = None
+
+        # Favor thread replies 4:1 whenever both queues contain content.
+        if self.thread_queue and (
+            self.thread_display_count < 4 or not self.standalone_queue
+        ):
+            message = self._pop_random_message(self.thread_queue)
+            if message:
+                self.thread_display_count += 1
+        elif self.standalone_queue:
+            message = self._pop_random_message(self.standalone_queue)
+            if message:
+                self.thread_display_count = 0
+        elif self.thread_queue:
+            message = self._pop_random_message(self.thread_queue)
+            if message:
+                self.thread_display_count += 1
+
+        if message:
+            self.last_subject = message["subject"]
+
         return message
 
     def stream(self):
