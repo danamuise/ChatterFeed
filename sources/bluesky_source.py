@@ -15,10 +15,12 @@ class BlueskySource:
     def __init__(
         self,
         api_base: str = "https://public.api.bsky.app",
+        search_base: str = "https://api.bsky.app",
         poll_seconds: float = 5.0,
         request_lock=None,
     ) -> None:
         self.api_base = api_base.rstrip("/")
+        self.search_base = search_base.rstrip("/")
         self.poll_seconds = poll_seconds
         self.request_lock = request_lock
 
@@ -58,7 +60,7 @@ class BlueskySource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/2.0 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/2.1 (non-commercial art project)",
             },
         )
 
@@ -111,8 +113,8 @@ class BlueskySource:
             }
         )
         url = (
-            f"{self.api_base}/xrpc/"
-            f"app.bsky.feed.searchposts?{query}"
+            f"{self.search_base}/xrpc/"
+            f"app.bsky.feed.searchPosts?{query}"
         )
         data = self._request_json(url)
         posts = data.get("posts", []) if isinstance(data, dict) else []
