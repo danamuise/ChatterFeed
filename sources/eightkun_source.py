@@ -179,7 +179,7 @@ class EightKunSource:
             self.queue.append(
                 {
                     "source": "8kun",
-                    "subject": "/qresearch/ Q Research",
+                    "subject": "/qresearch/ QAnon",
                     "timestamp": datetime.now(timezone.utc).isoformat(
                         timespec="seconds"
                     ),
