@@ -18,16 +18,16 @@ def keyboard_commands() -> None:
             command = input().strip().lower()
             if command in {"c", "clear"}:
                 clear_screen()
-                print("ChatterFeed v2.2")
-                print("Listening to Mastodon + Bluesky + 4chan conversations...")
+                print("ChatterFeed v2.3")
+                print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
                 print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
         except (EOFError, KeyboardInterrupt):
             return
 
 
 def main() -> None:
-    print("ChatterFeed v2.2")
-    print("Listening to Mastodon + Bluesky + 4chan conversations...")
+    print("ChatterFeed v2.3")
+    print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
     print("4chan boards: /v/ /g/ /pol/ /int/ /lgbt/")
     print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
 
