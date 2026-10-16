@@ -24,7 +24,6 @@ class MastodonSource:
         self.hashtags = [
             "politics",
             "humanrights",
-            "news",
             "technology",
             "climate",
             "science",
