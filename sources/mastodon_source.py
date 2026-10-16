@@ -24,9 +24,7 @@ class MastodonSource:
         self.hashtags = [
             "politics",
             "humanrights",
-            "technology",
             "climate",
-            "science",
             "lgbtq",
             "culture",
             "israel",
@@ -38,10 +36,13 @@ class MastodonSource:
             "progressive",
             "religion",
             "mastodon",
-            "fediverse",
             "life",
             "thoughts",
             "chat",
+            "sex",
+            "homosexual",
+            "transexual",
+            "rightwing",
         ]
         self.since_ids: dict[str, str] = {}
 
