@@ -222,7 +222,7 @@ class BlueskySource:
 
             self.queue.append(
                 {
-                    "source": "bsky.app",
+                    "source": "bluesky",
                     "subject": subject,
                     "timestamp": created_at,
                     "text": text,
