@@ -4,7 +4,7 @@ import threading
 from display.console_display import ConsoleDisplay
 from processing.classifier import MessageClassifier
 from responses.triggers import TriggerHandler
-from sources.mastodon_source import MastodonSource
+from sources.combined_source import CombinedSource
 
 
 def clear_screen() -> None:
@@ -18,19 +18,19 @@ def keyboard_commands() -> None:
             command = input().strip().lower()
             if command in {"c", "clear"}:
                 clear_screen()
-                print("ChatterFeed v0.6")
-                print("Listening to selected mastodon.social hashtags...")
+                print("ChatterFeed v2.0")
+                print("Listening to Mastodon + Bluesky conversations...")
                 print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
         except (EOFError, KeyboardInterrupt):
             return
 
 
 def main() -> None:
-    print("ChatterFeed v0.6")
-    print("Listening to selected mastodon.social hashtags...")
+    print("ChatterFeed v2.0")
+    print("Listening to Mastodon + Bluesky conversations...")
     print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
 
-    source = MastodonSource()
+    source = CombinedSource(display_seconds=5.0)
     classifier = MessageClassifier()
     triggers = TriggerHandler()
     display = ConsoleDisplay()
