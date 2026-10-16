@@ -3,7 +3,6 @@ import threading
 
 from display.console_display import ConsoleDisplay
 from processing.classifier import MessageClassifier
-from processing.sanitizer import MessageSanitizer
 from responses.triggers import TriggerHandler
 from sources.mastodon_source import MastodonSource
 
@@ -33,7 +32,6 @@ def main() -> None:
 
     source = MastodonSource()
     classifier = MessageClassifier()
-    sanitizer = MessageSanitizer()
     triggers = TriggerHandler()
     display = ConsoleDisplay()
 
@@ -49,13 +47,12 @@ def main() -> None:
 
             result = classifier.analyze(raw_text)
             triggers.handle(result)
-            safe_text = sanitizer.clean(raw_text)
 
             display.show(
                 source=message["source"],
                 subject=message["subject"],
                 timestamp=message["timestamp"],
-                safe_text=safe_text,
+                safe_text=raw_text,
                 result=result,
             )
 
