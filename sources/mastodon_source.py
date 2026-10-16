@@ -40,7 +40,6 @@ class MastodonSource:
             "thoughts",
             "chat",
             "sex",
-            "homosexual",
             "transexual",
             "rightwing",
         ]
