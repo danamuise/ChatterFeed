@@ -18,9 +18,11 @@ class MastodonSource:
         self,
         instance: str = "https://mastodon.social",
         poll_seconds: float = 5.0,
+        request_lock=None,
     ) -> None:
         self.instance = instance.rstrip("/")
         self.poll_seconds = poll_seconds
+        self.request_lock = request_lock
         self.hashtags = [
             "politics",
             "humanrights",
@@ -84,8 +86,13 @@ class MastodonSource:
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=15) as response:
-                return json.loads(response.read().decode("utf-8"))
+            if self.request_lock is None:
+                with urllib.request.urlopen(request, timeout=15) as response:
+                    return json.loads(response.read().decode("utf-8"))
+
+            with self.request_lock:
+                with urllib.request.urlopen(request, timeout=15) as response:
+                    return json.loads(response.read().decode("utf-8"))
 
         except urllib.error.HTTPError as error:
             if error.code == 429:
