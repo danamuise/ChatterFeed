@@ -36,7 +36,6 @@ class BlueskySource:
             "jewish",
             "feminism",
             "religion",
-            "mastodon",
             "life",
             "thoughts",
             "chat",
