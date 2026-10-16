@@ -5,6 +5,7 @@ import time
 
 from sources.bluesky_source import BlueskySource
 from sources.fourchan_source import FourChanSource
+from sources.eightkun_source import EightKunSource
 from sources.mastodon_source import MastodonSource
 
 
