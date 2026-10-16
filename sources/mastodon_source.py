@@ -64,6 +64,9 @@ class MastodonSource:
         # hashtag request -> thread request -> next hashtag request.
         self.pending_thread: dict | None = None
 
+        # Avoid repeatedly sampling the same active thread.
+        self.recent_thread_ids: deque[str] = deque(maxlen=100)
+
     @staticmethod
     def _plain_text(content: str) -> str:
         content = re.sub(r"<br\s*/?>", "\n", content, flags=re.IGNORECASE)
@@ -78,7 +81,7 @@ class MastodonSource:
             url,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "ChatterFeed/1.8 (non-commercial art project)",
+                "User-Agent": "ChatterFeed/1.9 (non-commercial art project)",
             },
         )
 
@@ -246,34 +249,64 @@ class MastodonSource:
         for status in statuses:
             self._queue_one_status(f"#{hashtag}", status, False)
 
+    def _matching_monitored_tags(self, status: dict) -> list[str]:
+        status_tags = {
+            tag.get("name", "").lower()
+            for tag in status.get("tags", [])
+        }
+        return [
+            hashtag
+            for hashtag in self.hashtags
+            if hashtag.lower() in status_tags
+        ]
+
     def _choose_thread_candidate(
         self,
-        subject: str,
+        subject: str | None,
         statuses: list[dict],
+        require_monitored_tag: bool = False,
     ) -> None:
-        candidates = [
-            status
-            for status in statuses
-            if int(status.get("replies_count", 0) or 0) > 0
-        ]
+        candidates: list[tuple[dict, list[str]]] = []
+
+        for status in statuses:
+            if int(status.get("replies_count", 0) or 0) <= 0:
+                continue
+
+            status_id = status.get("id")
+            if not status_id or status_id in self.recent_thread_ids:
+                continue
+
+            matches = self._matching_monitored_tags(status)
+            if require_monitored_tag and not matches:
+                continue
+
+            candidates.append((status, matches))
 
         if not candidates:
             self.pending_thread = None
             return
 
-        chosen = random.choice(candidates)
+        chosen, matches = random.choice(candidates)
+        chosen_subject = subject
+
+        if matches:
+            chosen_subject = f"#{random.choice(matches)}"
+
         self.pending_thread = {
             "status_id": chosen["id"],
-            "subject": subject,
+            "subject": chosen_subject or "THREAD",
         }
+        self.recent_thread_ids.append(chosen["id"])
 
     def _queue_thread_replies(self, subject: str, context: dict) -> None:
         descendants = context.get("descendants", [])
-        if not isinstance(descendants, list):
+        if not isinstance(descendants, list) or not descendants:
             return
 
-        random.shuffle(descendants)
-        for reply in descendants:
+        # Take only a small random sample so one active thread cannot dominate
+        # the torrent. The next discovery cycle moves on to another thread.
+        sample_size = min(len(descendants), random.randint(2, 4))
+        for reply in random.sample(descendants, sample_size):
             self._queue_one_status(subject, reply, True)
 
     def _pop_random_message(self, queue: deque[dict]) -> dict | None:
@@ -351,7 +384,11 @@ class MastodonSource:
                     # interaction. These are more likely to have replies than
                     # random hashtag posts.
                     statuses = self._fetch_trending_statuses()
-                    self._choose_thread_candidate("#conversation", statuses)
+                    self._choose_thread_candidate(
+                        None,
+                        statuses,
+                        require_monitored_tag=True,
+                    )
 
                     if self.pending_thread is not None:
                         fetch_thread_next = True
@@ -371,6 +408,7 @@ class MastodonSource:
                         self._choose_thread_candidate(
                             f"#{hashtag}",
                             tag_statuses,
+                            require_monitored_tag=False,
                         )
 
                         if self.pending_thread is None and tag_statuses:
