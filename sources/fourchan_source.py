@@ -23,6 +23,13 @@ class FourChanSource:
         self.request_lock = request_lock
 
         self.boards = ["v", "g", "pol", "int", "lgbt"]
+        self.board_names = {
+            "v": "Video Games",
+            "g": "Technology",
+            "pol": "Politically Incorrect",
+            "int": "International",
+            "lgbt": "LGBT",
+        }
         self.board_index = 0
         self.pending_thread: dict | None = None
 
@@ -137,7 +144,7 @@ class FourChanSource:
         self.pending_thread = {
             "board": board,
             "thread_id": thread_id,
-            "subject": f"/{board}/",
+            "subject": f"/{board}/ {self.board_names.get(board, board)}",
         }
 
     def _queue_replies(self, subject: str, data: dict) -> None:
