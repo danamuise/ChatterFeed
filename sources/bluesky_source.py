@@ -40,7 +40,6 @@ class BlueskySource:
             "thoughts",
             "chat",
             "sex",
-            "homosexual",
             "transexual",
             "rightwing",
         ]
