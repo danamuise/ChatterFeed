@@ -112,7 +112,7 @@ class BlueskySource:
         )
         url = (
             f"{self.api_base}/xrpc/"
-            f"app.bsky.feed.searchPosts?{query}"
+            f"app.bsky.feed.searchposts?{query}"
         )
         data = self._request_json(url)
         posts = data.get("posts", []) if isinstance(data, dict) else []
