@@ -9,7 +9,7 @@ from sources.mastodon_source import MastodonSource
 
 
 class CombinedSource:
-    """Merge Mastodon, Bluesky, and 4chan into one paced ChatterFeed torrent."""
+    """Merge Mastodon, Bluesky, 4chan, and 8kun into one paced ChatterFeed torrent."""
 
     def __init__(self, display_seconds: float = 5.0) -> None:
         self.display_seconds = display_seconds
@@ -26,6 +26,10 @@ class CombinedSource:
                 request_lock=self.request_lock,
             ),
             FourChanSource(
+                poll_seconds=5.0,
+                request_lock=self.request_lock,
+            ),
+            EightKunSource(
                 poll_seconds=5.0,
                 request_lock=self.request_lock,
             ),
