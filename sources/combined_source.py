@@ -4,11 +4,12 @@ import threading
 import time
 
 from sources.bluesky_source import BlueskySource
+from sources.fourchan_source import FourChanSource
 from sources.mastodon_source import MastodonSource
 
 
 class CombinedSource:
-    """Merge Mastodon and Bluesky into one paced ChatterFeed torrent."""
+    """Merge Mastodon, Bluesky, and 4chan into one paced ChatterFeed torrent."""
 
     def __init__(self, display_seconds: float = 5.0) -> None:
         self.display_seconds = display_seconds
@@ -21,6 +22,10 @@ class CombinedSource:
                 request_lock=self.request_lock,
             ),
             BlueskySource(
+                poll_seconds=5.0,
+                request_lock=self.request_lock,
+            ),
+            FourChanSource(
                 poll_seconds=5.0,
                 request_lock=self.request_lock,
             ),
