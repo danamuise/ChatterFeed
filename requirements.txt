@@ -1,1 +1,1 @@
-# No third-party dependencies are required for ChatterFeed v0.1.
+openai>=1.0.0
