@@ -146,6 +146,35 @@ def print_result(result: dict) -> None:
     print("-------------------------------------\n")
 
 
+def read_multiline_post() -> str | None:
+    """Read a post exactly as pasted, including blank lines."""
+    print("Paste the post below.")
+    print("When finished, type /end on a new line and press Enter.")
+    print("Type q on the first line to quit.\n")
+
+    lines: list[str] = []
+    first_line = True
+
+    while True:
+        prompt = "Post> " if first_line else "...   "
+
+        try:
+            line = input(prompt)
+        except (EOFError, KeyboardInterrupt):
+            return None
+
+        command = line.strip().lower()
+
+        if first_line and command in {"q", "quit", "exit"}:
+            return None
+
+        if command == "/end":
+            return "\n".join(lines).strip()
+
+        lines.append(line)
+        first_line = False
+
+
 def main() -> None:
     if not os.getenv("OPENAI_API_KEY"):
         print("OPENAI_API_KEY is not set.")
@@ -163,21 +192,17 @@ def main() -> None:
 
     print("ChatterFeed AI Interpreter")
     print(f"Model: {MODEL}")
-    print("Paste one social-media post and press Enter.")
-    print("Type q and press Enter to quit.\n")
+    print("Multiline posts are preserved exactly for interpretation.\n")
 
     while True:
-        try:
-            post = input("Post> ").strip()
-        except (EOFError, KeyboardInterrupt):
+        post = read_multiline_post()
+
+        if post is None:
             print("\nStopped.")
             return
 
-        if post.lower() in {"q", "quit", "exit"}:
-            print("Stopped.")
-            return
-
         if not post:
+            print("No post entered.\n")
             continue
 
         try:
