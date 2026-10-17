@@ -5,7 +5,7 @@ import sys
 from openai import OpenAI
 
 
-MODEL = os.getenv("CHATTERFEED_AI_MODEL", "gpt-6-luna")
+MODEL = os.getenv("CHATTERFEED_AI_MODEL", "gpt-5.6-luna")
 
 SYSTEM_PROMPT = """
 You are the ChatterFeed language interpreter.
