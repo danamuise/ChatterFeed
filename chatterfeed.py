@@ -3,6 +3,7 @@ import threading
 
 from display.console_display import ConsoleDisplay
 from processing.classifier import MessageClassifier
+from processing.sanitizer import MessageSanitizer
 from responses.triggers import TriggerHandler
 from sources.combined_source import CombinedSource
 
@@ -33,6 +34,7 @@ def main() -> None:
 
     source = CombinedSource(display_seconds=5.0)
     classifier = MessageClassifier()
+    sanitizer = MessageSanitizer()
     triggers = TriggerHandler()
     display = ConsoleDisplay()
 
@@ -46,14 +48,18 @@ def main() -> None:
         for message in source.stream():
             raw_text = message["text"]
 
+            # Analyze and trigger from the untouched original post.
             result = classifier.analyze(raw_text)
             triggers.handle(result)
+
+            # Sanitization happens only after analysis, immediately before display.
+            safe_text = sanitizer.clean(raw_text)
 
             display.show(
                 source=message["source"],
                 subject=message["subject"],
                 timestamp=message["timestamp"],
-                safe_text=raw_text,
+                safe_text=safe_text,
                 result=result,
             )
 
