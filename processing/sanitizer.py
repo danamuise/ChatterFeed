@@ -1,76 +1,37 @@
-import re
-from collections.abc import Iterable
+import os
+
+from openai import OpenAI
+
+
+MODEL = os.getenv(
+    "CHATTERFEED_SANITIZER_MODEL",
+    os.getenv("CHATTERFEED_AI_MODEL", "gpt-5.6-luna"),
+)
+
+SANITIZER_PROMPT = """
+Sanitize this social-media post for public display.
+Preserve the text exactly except for words or passages that should be redacted.
+Use * for profanity/obscenity and █ for slurs or hateful terms.
+Return only the sanitized post.
+""".strip()
 
 
 class MessageSanitizer:
-    """Create a display-safe copy of a post without modifying the raw text."""
+    """Send a post to the AI sanitizer and return its sanitized version."""
 
-    PROFANITY = {
-        "asshole",
-        "bitch",
-        "bullshit",
-        "cunt",
-        "dick",
-        "fuck",
-        "fucked",
-        "fucker",
-        "fucking",
-        "motherfucker",
-        "pussy",
-        "shit",
-    }
+    def __init__(self, client: OpenAI | None = None) -> None:
+        self.client = client or OpenAI()
 
-    SLURS = {
-        "chink",
-        "fag",
-        "faggot",
-        "kike",
-        "nigger",
-        "retard",
-        "spic",
-        "tranny",
-    }
+    def clean(self, text: str) -> str:
+        response = self.client.responses.create(
+            model=MODEL,
+            instructions=SANITIZER_PROMPT,
+            input=text,
+        )
 
-    @staticmethod
-    def _mask_terms(
-        text: str,
-        terms: Iterable[str],
-        mask_character: str,
-    ) -> str:
-        for term in sorted(set(terms), key=len, reverse=True):
-            pattern = re.compile(
-                rf"(?<!\w){re.escape(term)}(?!\w)",
-                re.IGNORECASE,
-            )
-            text = pattern.sub(
-                lambda match: mask_character * len(match.group(0)),
-                text,
-            )
-        return text
+        sanitized = response.output_text
 
-    def clean(
-        self,
-        text: str,
-        redaction_spans: list[tuple[int, int]] | None = None,
-    ) -> str:
-        """
-        Return a sanitized display copy.
+        if not sanitized:
+            raise ValueError("AI sanitizer returned an empty response.")
 
-        redaction_spans is reserved for contextual AI redactions. Spans refer
-        to character offsets in the original raw text and are applied before
-        deterministic word masking.
-        """
-        safe_text = text
-
-        if redaction_spans:
-            characters = list(safe_text)
-            for start, end in redaction_spans:
-                start = max(0, start)
-                end = min(len(characters), end)
-                if start < end:
-                    characters[start:end] = ["█"] * (end - start)
-            safe_text = "".join(characters)
-
-        safe_text = self._mask_terms(safe_text, self.SLURS, "█")
-        safe_text = self._mask_terms(safe_text, self.PROFANITY, "*")
-        return safe_text
+        return sanitized
