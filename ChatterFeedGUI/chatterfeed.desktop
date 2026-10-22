@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=ChatterFeed
-Comment=Launch the ChatterFeed installation interface
-Exec=python3 app.py
-Path=/home/pi/ChatterFeed
-Terminal=false
-Categories=Utility;
