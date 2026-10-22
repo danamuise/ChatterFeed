@@ -39,7 +39,7 @@ class MessageSanitizer:
     ) -> str:
         for term in sorted(set(terms), key=len, reverse=True):
             pattern = re.compile(
-                rf"(?<!\\w){re.escape(term)}(?!\\w)",
+                rf"(?<!\w){re.escape(term)}(?!\w)",
                 re.IGNORECASE,
             )
             text = pattern.sub(
