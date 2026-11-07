@@ -87,6 +87,14 @@ class CombinedSource:
                 pending.remove(message)
                 last_source = message.get("source")
 
+                # Measure pacing from when the post is emitted, including
+                # any drawing hold while the caller processes the post.
+                # A 10-second hold should not incur another 5-second wait.
+                emitted_at = time.monotonic()
                 yield message
 
-            time.sleep(self.display_seconds)
+                remaining = self.display_seconds - (time.monotonic() - emitted_at)
+                if remaining > 0:
+                    time.sleep(remaining)
+            else:
+                time.sleep(self.display_seconds)
