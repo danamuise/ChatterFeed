@@ -32,16 +32,17 @@ def keyboard_commands() -> None:
 
 
 def main() -> None:
-    # Chance of selecting a post for interpretation (0=never, 1=every post).
-    interpret_chance = max(
-        0.0, min(1.0, float(os.getenv("CHATTERFEED_INTERPRET_CHANCE", "0.20")))
-    )
+    # Interpret one post every 4 to 7 posts, with a fresh random interval
+    # after each selection. This avoids long runs without robot activity.
+    min_interval = 4
+    max_interval = 7
+    posts_until_interpretation = random.randint(min_interval, max_interval)
     draw_seconds = max(0.0, float(os.getenv("CHATTERFEED_DRAW_SECONDS", "10")))
 
     print("ChatterFeed v2.5")
     print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
     print("4chan boards: /v/ /g/ /pol/ /int/ /lgbt/")
-    print(f"AI interpretation: {interpret_chance:.0%} chance per post")
+    print(f"AI interpretation: every {min_interval}-{max_interval} posts (random interval)")
     print(f"Simulated drawing hold: {draw_seconds:g} seconds")
     print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
 
@@ -69,7 +70,12 @@ def main() -> None:
                 result = classifier.analyze(raw_text)
                 triggers.handle(result)
 
-                selected = random.random() < interpret_chance
+                posts_until_interpretation -= 1
+                selected = posts_until_interpretation == 0
+                if selected:
+                    posts_until_interpretation = random.randint(
+                        min_interval, max_interval
+                    )
                 interpretation_future = (
                     interpreter_pool.submit(evaluate_post, client, raw_text)
                     if selected else None
