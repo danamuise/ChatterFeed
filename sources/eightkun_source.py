@@ -126,6 +126,12 @@ class EightKunSource:
             if not text or len(text) >= 1000:
                 continue
 
+            # A lone "Reserved" on /qresearch/ is a thread placeholder,
+            # not meaningful conversation. Exclude it before AI API calls.
+            # Only match the entire normalized text (case-insensitive).
+            if text.casefold() in {"reserved", "[reserved]"}:
+                continue
+
             if len(re.findall(r"https?://\S+", text, flags=re.IGNORECASE)) > 2:
                 continue
 
