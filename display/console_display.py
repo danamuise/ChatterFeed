@@ -66,6 +66,11 @@ class ConsoleDisplay:
                 f"Intensity: {round(intensity * 100)}/100",
                 style=color,
             )
+            rationale = str(interpretation.get("rationale", "")).strip()
+            rationale_line = Text(
+                f"Rationale: {rationale}" if rationale else "Rationale: not provided",
+                style=color,
+            )
             status = Text(
                 f"[AI INTERPRETED - DRAW HOLD {hold_seconds:g}s]",
                 style=color,
@@ -85,6 +90,7 @@ class ConsoleDisplay:
             Text(f"Feed:   {subject}"),
             Text(f"Time:   {timestamp}"),
             score_line,
+            *([rationale_line] if interpretation is not None else []),
             status,
         ]
         for category in result.categories:
