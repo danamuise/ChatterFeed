@@ -36,12 +36,19 @@ class BlueskySource:
             "jewish",
             "feminism",
             "religion",
+            "mastodon",
             "life",
             "thoughts",
             "chat",
             "sex",
             "transexual",
             "rightwing",
+            "muslim",
+            "ZohranMamdani",
+            "Mamdani",
+            "elsayed",
+            "democrats",
+            "bluewave",
         ]
 
         self.topic_index = 0
