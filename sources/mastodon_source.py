@@ -42,6 +42,12 @@ class MastodonSource:
             "sex",
             "transexual",
             "rightwing",
+            "muslim",
+            "ZohranMamdani",
+            "Mamdani",
+            "elsayed",
+            "democrats",
+            "bluewave",
         ]
         self.since_ids: dict[str, str] = {}
 
