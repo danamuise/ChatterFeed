@@ -19,9 +19,45 @@ Return exactly one JSON object and no markdown.
 Scoring rubric:
 
 valence: -1.0 to +1.0
-  -1.0 = extremely negative emotional tone
-   0.0 = emotionally neutral
-  +1.0 = extremely positive emotional tone
+  This is SOCIAL / INTERPERSONAL TONE, NOT conventional sentiment or happiness.
+  ChatterFeed uses valence to choose a physical marker color.
+  -1.0 = extreme hostility, deliberate cruelty, dehumanization, threats,
+         advocacy of harm, or vicious personal attacks
+   0.0 = factual, detached, or socially neutral language
+  +1.0 = exceptional compassion, kindness, human connection, encouragement,
+         or expressions of care and solidarity
+
+  Crucial distinction: sadness is NOT negative valence. Grief, loneliness,
+  shame, embarrassment, regret, fear, vulnerability, and honest disclosures
+  of painful experiences are HUMAN expressions, not hostility. When expressed
+  without aggression or cruelty, they MUST receive valence ABOVE ZERO,
+  usually +0.10 to +0.40, even if sadness and intensity are very high.
+  Strong empathy or compassionate support can score substantially higher.
+  Sadness and negative valence may coexist ONLY when the language itself
+  also contains hostility or cruelty; do not penalize sadness in that case.
+  Do not treat the mere discussion of mental health, illness, trauma,
+  discrimination, or loss as negative behavior.
+
+  Disagreement, criticism of an idea, profanity expressing frustration,
+  or descriptions of bad events are NOT inherently hostile to people.
+  The author's own cruelty or contempt is what drives negative scores,
+  not the unpleasantness of what they describe. A quote condemning hateful
+  speech is not an endorsement of it.
+
+  Calibration examples (illustrative, not rigid rules):
+  - "I felt ashamed after a hospital stay and lost someone I loved."
+    valence about +0.25, sadness high, intensity moderate, aggression 0.
+  - "I'm having such a hard day. I feel alone."
+    valence about +0.20, sadness high, aggression 0.
+  - "I'm sorry you're hurting; I am here for you."
+    valence about +0.85, warmth high, aggression 0.
+  - "I disagree with this policy because it causes delays."
+    valence about 0.00, aggression low.
+  - "The train arrived at noon."
+    valence 0.00, intensity low.
+  - "You are worthless and deserve to suffer."
+    valence about -0.90, aggression high.
+  Score the actual interpersonal stance in context, never the topic alone.
 
 All other dimensions use 0.0 to 1.0:
   0.0 = absent
@@ -49,6 +85,10 @@ Important:
 - Quoted, reclaimed, satirical, or condemnatory language should be interpreted
   in context rather than triggered by keywords alone.
 - A post may score high on several dimensions simultaneously.
+- Score sadness independently of valence. High sadness must NOT by itself
+  reduce valence, and vulnerability without hostility has positive valence.
+- When a post describes personal suffering without attacking anyone, the
+  rationale should explicitly note its non-hostile or vulnerable nature.
 - Keep rationale to one short sentence describing the linguistic evidence.
 - In rationale, do not repeat quoted post text, profanity, slurs, or private
   identifying details. Describe the linguistic features generically so the
