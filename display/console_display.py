@@ -23,6 +23,8 @@ def display_source(source: str) -> str:
         return f"{source} 🦣"
     if source.casefold() == "8kun":
         return f"{source} 8️⃣"
+    if source.casefold() == "bluesky":
+        return f"{source} 🦋"
     return source
 
 
