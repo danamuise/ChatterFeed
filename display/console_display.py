@@ -15,6 +15,11 @@ from marker_palette import score_to_marker
 just_fix_windows_console()
 
 
+def display_source(source: str) -> str:
+    """Add a four-leaf clover to 4chan's displayed source label only."""
+    return f"{source} 🍀" if source.casefold() == "4chan" else source
+
+
 class ConsoleDisplay:
     def __init__(self) -> None:
         self.console = Console()
@@ -31,7 +36,7 @@ class ConsoleDisplay:
     ) -> None:
         """Normal, unselected torrent entry."""
         print("=" * 70)
-        print(f"Source: {source}")
+        print(f"Source: {display_source(source)}")
         print(f"Feed:   {subject}")
         print(f"Time:   {timestamp}")
 
@@ -84,7 +89,7 @@ class ConsoleDisplay:
 
         lines = [
             Text("=" * 70),
-            Text(f"Source: {source}"),
+            Text(f"Source: {display_source(source)}"),
             Text(f"Feed:   {subject}"),
             Text(f"Time:   {timestamp}"),
             score_line,
