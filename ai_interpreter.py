@@ -50,6 +50,9 @@ Important:
   in context rather than triggered by keywords alone.
 - A post may score high on several dimensions simultaneously.
 - Keep rationale to one short sentence describing the linguistic evidence.
+- In rationale, do not repeat quoted post text, profanity, slurs, or private
+  identifying details. Describe the linguistic features generically so the
+  rationale is appropriate for public display.
 
 Required JSON keys:
 {
