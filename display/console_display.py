@@ -16,8 +16,12 @@ just_fix_windows_console()
 
 
 def display_source(source: str) -> str:
-    """Add a four-leaf clover to 4chan's displayed source label only."""
-    return f"{source} 🍀" if source.casefold() == "4chan" else source
+    """Add source-specific emoji to torrent source labels only."""
+    if source.casefold() == "4chan":
+        return f"{source} 🍀"
+    if source.casefold().startswith("mastodon"):
+        return f"{source} 🦣"
+    return source
 
 
 class ConsoleDisplay:
