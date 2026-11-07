@@ -8,6 +8,7 @@ from rich.live import Live
 from rich.text import Text
 
 from processing.classifier import ClassificationResult
+from marker_palette import score_to_marker
 
 
 # Colorama enables console ANSI support on Windows.
@@ -56,11 +57,8 @@ class ConsoleDisplay:
         if interpretation is not None:
             valence = float(interpretation["valence"])
             intensity = float(interpretation["intensity"])
-            color = (
-                "bold red" if valence <= -0.2
-                else "bold green" if valence >= 0.2
-                else "bold yellow"
-            )
+            marker = score_to_marker(round(valence * 100))
+            color = f"bold {marker.hex_color}"
             score_line = Text(
                 f"Score:  {round(valence * 100):+d}/100 (tone)  |  "
                 f"Intensity: {round(intensity * 100)}/100",
@@ -72,7 +70,7 @@ class ConsoleDisplay:
                 style=color,
             )
             status = Text(
-                f"[AI INTERPRETED - DRAW HOLD {hold_seconds:g}s]",
+                f"[AI INTERPRETED - MARKER {marker.number}: {marker.name} - DRAW HOLD {hold_seconds:g}s]",
                 style=color,
             )
         elif error:
