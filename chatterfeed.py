@@ -1,9 +1,8 @@
 import os
 import random
-import sys
 import threading
-import time
 
+from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI
 
 from ai_interpreter import evaluate_post
@@ -25,7 +24,7 @@ def keyboard_commands() -> None:
             command = input().strip().lower()
             if command in {"c", "clear"}:
                 clear_screen()
-                print("ChatterFeed v2.4")
+                print("ChatterFeed v2.5")
                 print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
                 print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
         except (EOFError, KeyboardInterrupt):
@@ -37,10 +36,9 @@ def main() -> None:
     interpret_chance = max(
         0.0, min(1.0, float(os.getenv("CHATTERFEED_INTERPRET_CHANCE", "0.20")))
     )
-    # Time to hold an interpreted post onscreen, simulating a robot drawing.
     draw_seconds = max(0.0, float(os.getenv("CHATTERFEED_DRAW_SECONDS", "10")))
 
-    print("ChatterFeed v2.4")
+    print("ChatterFeed v2.5")
     print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
     print("4chan boards: /v/ /g/ /pol/ /int/ /lgbt/")
     print(f"AI interpretation: {interpret_chance:.0%} chance per post")
@@ -60,43 +58,50 @@ def main() -> None:
     )
     command_thread.start()
 
+    # The interpreter runs separately from the sanitizer so it does not
+    # delay the appearance of the sanitized post in the torrent.
     try:
-        for message in source.stream():
-            raw_text = message["text"]
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="interpreter") as interpreter_pool:
+            for message in source.stream():
+                raw_text = message["text"]
 
-            # Keep the existing (currently placeholder) classifier/trigger path.
-            result = classifier.analyze(raw_text)
-            triggers.handle(result)
+                # Keep the existing (currently placeholder) classifier/trigger path.
+                result = classifier.analyze(raw_text)
+                triggers.handle(result)
 
-            # Select random posts for the existing cloud AI interpreter.
-            # Store the full interpretation and a prominent -100..+100 tone
-            # score on the post itself for future GUI/robot integration.
-            if random.random() < interpret_chance:
-                try:
-                    interpretation = evaluate_post(client, raw_text)
-                    message["interpretation"] = interpretation
-                    message["score"] = round(interpretation["valence"] * 100)
-                except Exception as error:
-                    # An interpretation failure should not stop the torrent.
-                    print(f"[Interpreter warning] {error}", file=sys.stderr)
+                selected = random.random() < interpret_chance
+                interpretation_future = (
+                    interpreter_pool.submit(evaluate_post, client, raw_text)
+                    if selected else None
+                )
 
-            # Sanitize every post before public display, including selected posts.
-            safe_text = sanitizer.clean(raw_text)
+                # Never show raw post text: wait for AI sanitization first.
+                safe_text = sanitizer.clean(raw_text)
 
-            display.show(
-                source=message["source"],
-                subject=message["subject"],
-                timestamp=message["timestamp"],
-                safe_text=safe_text,
-                result=result,
-                interpretation=message.get("interpretation"),
-                draw_seconds=draw_seconds,
-            )
-
-            # This pauses displayed posts, not the background source workers.
-            # It will later be replaced by a robot READY/complete signal.
-            if "interpretation" in message:
-                time.sleep(draw_seconds)
+                if selected:
+                    # Display immediately after sanitization with an "interpreting"
+                    # placeholder; the score and color update IN PLACE when AI
+                    # interpretation completes. Hold starts on first display.
+                    interpretation = display.show_selected(
+                        source=message["source"],
+                        subject=message["subject"],
+                        timestamp=message["timestamp"],
+                        safe_text=safe_text,
+                        result=result,
+                        interpretation_future=interpretation_future,
+                        hold_seconds=draw_seconds,
+                    )
+                    if interpretation is not None:
+                        message["interpretation"] = interpretation
+                        message["score"] = round(interpretation["valence"] * 100)
+                else:
+                    display.show(
+                        source=message["source"],
+                        subject=message["subject"],
+                        timestamp=message["timestamp"],
+                        safe_text=safe_text,
+                        result=result,
+                    )
 
     except KeyboardInterrupt:
         print("\nChatterFeed stopped.")
