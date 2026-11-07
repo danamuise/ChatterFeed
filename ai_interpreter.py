@@ -20,7 +20,8 @@ Scoring rubric:
 
 valence: -1.0 to +1.0
   This is SOCIAL / INTERPERSONAL TONE, NOT conventional sentiment or happiness.
-  ChatterFeed uses valence to choose a physical marker color.
+  Valence records social/interpersonal tone for reference. Marker color is
+  chosen SEPARATELY from emotional dimensions, not from the valence number.
   -1.0 = extreme hostility, deliberate cruelty, dehumanization, threats,
          advocacy of harm, or vicious personal attacks
    0.0 = factual, detached, or socially neutral language
@@ -73,7 +74,14 @@ Dimensions:
 - certainty: absolute/confident language
 - humor: joking, playful, comedic tone
 - sarcasm: ironic or mocking inversion
-- sadness: grief, despair, melancholy
+- sadness: grief, despair, melancholy; NOT hostility
+- vulnerability: sincere disclosure of pain, fear, loss, insecurity or shame;
+  expressing vulnerability is not hostility or weakness
+- hope: optimism, possibility of things improving, reassurance, resilience,
+  longing for a better future, or uplifting connection
+- tension: apprehension, agitation, interpersonal strain, unresolved conflict
+- uncertainty: explicit doubt, hesitation, indecision, not knowing; do not
+  assign just because certainty is low in an otherwise neutral statement
 - conspiratorial: hidden plots, secret actors, coordinated deception
 - dehumanizing: treating people/groups as lesser, vermin, objects, etc.
 - violent_rhetoric: threats, calls for harm, glorification of violence
@@ -89,6 +97,20 @@ Important:
   reduce valence, and vulnerability without hostility has positive valence.
 - When a post describes personal suffering without attacking anyone, the
   rationale should explicitly note its non-hostile or vulnerable nature.
+- For physical marker selection, distinguish:
+  dark red = extreme hostility / dehumanization / threats;
+  red = anger or attacks on people;
+  orange = heated conflict or agitation;
+  yellow = tension, doubt, or uncertainty;
+  light green = neutral or reflective expression;
+  green = warmth, compassion, caring support;
+  blue = sadness, grief, vulnerability, personal suffering without hostility;
+  cyan = hope, optimism, connection, openness to improvement.
+  A post with high sadness and no hostility should have high sadness and/or
+  vulnerability scores even if its valence is positive. Hope and sadness can
+  coexist; score both rather than collapsing them into a single sentiment.
+  Explicitly abusive attacks still require high aggression even if the
+  writer also sounds sad. Rate the POST'S expression, not its topic.
 - Keep rationale to one short sentence describing the linguistic evidence.
 - In rationale, do not repeat quoted post text, profanity, slurs, or private
   identifying details. Describe the linguistic features generically so the
@@ -104,6 +126,10 @@ Required JSON keys:
   "humor": number,
   "sarcasm": number,
   "sadness": number,
+  "vulnerability": number,
+  "hope": number,
+  "tension": number,
+  "uncertainty": number,
   "conspiratorial": number,
   "dehumanizing": number,
   "violent_rhetoric": number,
@@ -122,6 +148,10 @@ NUMERIC_KEYS = [
     "humor",
     "sarcasm",
     "sadness",
+    "vulnerability",
+    "hope",
+    "tension",
+    "uncertainty",
     "conspiratorial",
     "dehumanizing",
     "violent_rhetoric",
