@@ -7,6 +7,7 @@ from openai import OpenAI
 
 from ai_interpreter import evaluate_post
 from display.console_display import ConsoleDisplay
+from marker_palette import emotion_to_marker
 from processing.classifier import MessageClassifier
 from processing.sanitizer import MessageSanitizer
 from responses.triggers import TriggerHandler
@@ -43,6 +44,7 @@ def main() -> None:
     print("Listening to Mastodon + Bluesky + 4chan + 8kun conversations...")
     print("4chan boards: /v/ /g/ /pol/ /int/ /lgbt/")
     print(f"AI interpretation: every {min_interval}-{max_interval} posts (random interval)")
+    print("Marker color: emotion-based (tone score is separate)")
     print(f"Simulated drawing hold: {draw_seconds:g} seconds")
     print("Commands: c + Enter = clear | Ctrl+C = stop.\n")
 
@@ -100,6 +102,7 @@ def main() -> None:
                     if interpretation is not None:
                         message["interpretation"] = interpretation
                         message["score"] = round(interpretation["valence"] * 100)
+                        message["marker_number"] = emotion_to_marker(interpretation).number
                 else:
                     display.show(
                         source=message["source"],
