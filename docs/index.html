@@ -1,1 +1,281 @@
-This is Chatterfeed website!
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11121a">
+  <meta name="description" content="Social Motion is an experimental robotic drawing installation that translates the emotional language of online conversation into physical marks on paper.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Social Motion — Language becomes gesture">
+  <meta property="og:description" content="An experimental robotic drawing installation translating online discourse into physical marks.">
+  <title>Social Motion — Language becomes gesture</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --ink:#11121a;--panel:#191b25;--panel2:#222431;--paper:#f0efe8;
+      --muted:#b6b9c7;--line:#3a3b47;--accent:#c8f09a;
+      --r1:#78212b;--r2:#ce353f;--r3:#e67b2c;--r4:#e5b83b;
+      --r5:#a3ca63;--r6:#3fa868;--r7:#3267c2;--r8:#40b9cb;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--ink);color:var(--paper);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+    a{color:inherit}a:hover{color:var(--accent)}
+    a:focus-visible{outline:2px solid var(--accent);outline-offset:5px}
+    .wrap{width:min(1140px,calc(100% - 44px));margin-inline:auto}
+    .site-header{border-bottom:1px solid var(--line);position:relative;z-index:3}
+    .nav{min-height:76px;display:flex;align-items:center;gap:22px;justify-content:space-between}
+    .brand{text-decoration:none;font-size:15px;font-weight:800;letter-spacing:.1em;white-space:nowrap}
+    .brand-mark{color:var(--accent);margin-right:10px}
+    .navlinks{display:flex;flex-wrap:wrap;gap:28px;align-items:center;font-size:13px;color:var(--muted)}
+    .navlinks a{text-decoration:none}
+    .eyebrow{display:inline-flex;gap:9px;align-items:center;font-weight:700;text-transform:uppercase;letter-spacing:.15em;font-size:11px;color:var(--accent)}
+    .eyebrow:before{content:"";width:22px;height:1px;background:currentColor}
+    .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:52px;min-height:625px;align-items:center;padding-block:90px 100px}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:clamp(57px,7vw,112px);line-height:.94;letter-spacing:-.075em;margin:30px 0 31px;font-weight:760}
+    .gradient-word{background:linear-gradient(110deg,#f0efe8 3%,#c8f09a 58%,#40b9cb);color:transparent;background-clip:text;-webkit-background-clip:text}
+    .hero-description{font-size:clamp(17px,1.65vw,21px);color:#d0d1d9;max-width:560px;line-height:1.58}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:34px}
+    .button{display:inline-flex;justify-content:center;align-items:center;min-height:46px;padding:12px 20px;border:1px solid var(--accent);background:var(--accent);color:#101218;font-size:13px;font-weight:800;border-radius:5px;text-decoration:none}
+    .button:hover{background:#e1fbbd;color:#101218}
+    .button.alt{background:transparent;color:var(--paper);border-color:#555966}
+    .button.alt:hover{border-color:var(--accent);color:var(--accent)}
+    .availability{display:flex;gap:10px;align-items:center;margin-top:25px;font-size:12px;color:var(--muted)}
+    .availability .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+    .hero-art{min-height:490px;display:flex;justify-content:center;align-items:center;background:radial-gradient(circle at 52% 52%,#313041 0%,#21212e 35%,transparent 70%);position:relative}
+    .hero-art:before{content:"";position:absolute;inset:6%;border:1px solid #333441;border-radius:50%}
+    .hero-art:after{content:"";position:absolute;inset:19%;border:1px dashed #434451;border-radius:50%;opacity:.65}
+    .hero-art svg{width:100%;max-width:510px;display:block;position:relative;z-index:1;overflow:visible}
+    .hero-caption{position:absolute;bottom:3%;left:5%;font:600 10px/1.3 ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#9a9caf;text-transform:uppercase}
+    .section{padding:105px 0;border-top:1px solid var(--line)}
+    .section-head{max-width:840px;margin-bottom:53px}
+    h2{font-size:clamp(36px,4.9vw,67px);line-height:1.05;letter-spacing:-.055em;margin:17px 0 22px}
+    .section-intro{font-size:18px;color:var(--muted);max-width:720px}
+    .concept-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:68px}
+    .concept-grid p{color:#d1d2da;font-size:17px;max-width:710px}
+    .pull-quote{border-left:2px solid var(--accent);padding:2px 0 5px 23px;font-size:25px;font-weight:650;line-height:1.35;letter-spacing:-.035em}
+    .small-note{font-size:12px!important;color:var(--muted)!important;margin-top:20px}
+    .process-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .process-item{padding:30px 23px;min-height:232px;border:1px solid var(--line);background:var(--panel);border-radius:6px}
+    .number{color:var(--accent);font-size:12px;letter-spacing:.1em;font-family:ui-monospace,Consolas,monospace}
+    .process-item h3{font-size:19px;letter-spacing:-.03em;margin:31px 0 9px}
+    .process-item p{font-size:13px;color:var(--muted);margin-bottom:0}
+    .palette{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:11px}
+    .swatch{min-width:0}
+    .color-bar{height:120px;border-radius:5px 5px 0 0;display:flex;align-items:end;padding:12px}
+    .color-bar span{font:700 13px ui-monospace,Consolas,monospace;color:#fff;text-shadow:0 1px 7px #000b}
+    .swatch strong{font-size:13px;display:block;margin-top:13px}
+    .swatch small{font-size:11px;display:block;color:var(--muted);line-height:1.4;margin-top:4px}
+    .footnote{margin-top:27px;color:var(--muted);font-size:13px;max-width:700px}
+    .feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+    .media-shell{padding:12px;border:1px solid var(--line);background:var(--panel);border-radius:6px}
+    .media-shell img{width:100%;height:auto;display:block;background:#282932;border-radius:3px}
+    figcaption{font-size:12px;color:var(--muted);padding:12px 1px 0}
+    .feature-copy p{font-size:17px;color:var(--muted)}
+    .sources{display:flex;flex-wrap:wrap;gap:8px;margin:21px 0 26px}
+    .source-tag{border:1px solid var(--line);border-radius:50px;padding:7px 12px;font-size:12px;color:#dee0e8}
+    .feature-points{padding-left:19px;color:#d0d1d9;font-size:14px}
+    .feature-points li{margin-bottom:10px}
+    .endline{padding:90px 0;border-top:1px solid var(--line)}
+    .endline-grid{display:flex;justify-content:space-between;gap:24px;align-items:end}
+    .endline h2{margin-bottom:10px}
+    .endline p{color:var(--muted);max-width:600px}
+    .footer{border-top:1px solid var(--line);padding:22px 0 34px;color:var(--muted);font-size:12px}
+    .footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;gap:25px;padding-top:70px;min-height:0}
+      .hero-art{min-height:360px;max-width:620px;width:100%;margin:auto}
+      .concept-grid,.feature{grid-template-columns:1fr;gap:30px}
+      .process-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .palette{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .section{padding-block:74px}
+    }
+    @media(max-width:540px){
+      .wrap{width:min(100% - 30px,1140px)}
+      .nav{align-items:flex-start;flex-direction:column;gap:12px;padding-block:20px}
+      .navlinks{gap:16px;font-size:12px}
+      .hero{padding-top:53px;padding-bottom:61px}
+      h1{font-size:clamp(57px,15vw,85px)}
+      .hero-art{min-height:290px}
+      .process-grid{grid-template-columns:1fr}
+      .process-item{min-height:0}
+      .palette{gap:10px}
+      .color-bar{height:92px}
+      .swatch strong{font-size:12px}
+      .swatch small{font-size:10px}
+      .endline-grid{display:block}
+      .endline .button{margin-top:15px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Social Motion home"><span class="brand-mark">●</span>SOCIAL MOTION</a>
+      <nav class="navlinks" aria-label="Main navigation">
+        <a href="#concept">Concept</a>
+        <a href="#process">Process</a>
+        <a href="#colors">Eight colors</a>
+        <a href="#development">Development</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="wrap hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow">An experimental robotic artwork</span>
+        <h1 id="hero-title">Language<br>becomes<br><span class="gradient-word">gesture.</span></h1>
+        <p class="hero-description">Social Motion transforms the emotional character of online conversation into physical marks on paper—through language interpretation, color, and a robotic drawing arm.</p>
+        <div class="hero-actions">
+          <a class="button" href="#concept">Explore the project</a>
+          <a class="button alt" href="#process">How it works</a>
+        </div>
+        <div class="availability"><span class="dot"></span>In development · Independent, non-commercial artwork</div>
+      </div>
+
+      <div class="hero-art" aria-label="Abstract illustration of eight colored drawing gestures gathering on paper" role="img">
+        <svg viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="260" cy="260" r="177" fill="none" stroke="#626371" stroke-width="1" stroke-dasharray="3 10" opacity=".65"/>
+          <path d="M125 320 C153 290 196 242 252 265 S346 335 398 187" fill="none" stroke="#78212b" stroke-width="14" stroke-linecap="round" opacity=".94"/>
+          <path d="M100 260 C157 187 187 339 280 309 S344 218 421 275" fill="none" stroke="#ce353f" stroke-width="10" stroke-linecap="round"/>
+          <path d="M133 170 Q238 360 380 354" fill="none" stroke="#e67b2c" stroke-width="7" stroke-linecap="round"/>
+          <path d="M139 358 C171 225 305 181 391 260" fill="none" stroke="#e5b83b" stroke-width="6" stroke-linecap="round"/>
+          <path d="M151 226 C202 160 243 413 338 329" fill="none" stroke="#a3ca63" stroke-width="8" stroke-linecap="round"/>
+          <path d="M205 119 Q274 230 331 155 T413 237" fill="none" stroke="#3fa868" stroke-width="7" stroke-linecap="round"/>
+          <path d="M141 289 C212 394 276 99 364 162" fill="none" stroke="#3267c2" stroke-width="8" stroke-linecap="round"/>
+          <path d="M194 377 C214 285 300 340 404 330" fill="none" stroke="#40b9cb" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="260" cy="260" r="11" fill="#f0efe8"/>
+          <circle cx="260" cy="260" r="26" fill="none" stroke="#f0efe8" stroke-width="1.5" opacity=".45"/>
+          <circle cx="108" cy="260" r="3" fill="#f0efe8"/>
+          <circle cx="414" cy="275" r="3" fill="#f0efe8"/>
+        </svg>
+        <span class="hero-caption">Eight colors / countless conversations</span>
+      </div>
+    </section>
+
+    <section class="section" id="concept">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">01 / Concept</span>
+          <h2>What if words could<br>leave a physical trace?</h2>
+        </div>
+        <div class="concept-grid">
+          <div>
+            <p>Online language often feels fleeting: a continuous stream of opinions, jokes, tenderness, grief, conflict, and noise. But words carry an emotional force, even when delivered through a screen.</p>
+            <p><strong>Social Motion</strong> translates that force into a physical drawing. Public conversations become interpreted signals; those signals determine a marker color and eventually the character of the robot’s movements.</p>
+            <p>Over time, separate exchanges accumulate into a single image—a collective record of expression rather than a readable transcript.</p>
+          </div>
+          <aside>
+            <div class="pull-quote">A conversation disappears.<br>A gesture remains.</div>
+            <p class="small-note">This project is an artistic interpretation of online discourse, not a scientific measure of individuals or their emotions.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="process">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">02 / Process</span>
+          <h2>From language<br>to motion.</h2>
+          <p class="section-intro">A continuous software system samples public conversation, interprets its expression, and prepares a physical drawing response.</p>
+        </div>
+        <div class="process-grid">
+          <article class="process-item">
+            <span class="number">01 — Listen</span>
+            <h3>Live conversation</h3>
+            <p>Posts and discussion threads are sampled from public online communities.</p>
+          </article>
+          <article class="process-item">
+            <span class="number">02 — Interpret</span>
+            <h3>Emotional language</h3>
+            <p>AI evaluates qualities such as hostility, warmth, sadness, hope, and intensity.</p>
+          </article>
+          <article class="process-item">
+            <span class="number">03 — Choose</span>
+            <h3>Eight marker colors</h3>
+            <p>The dominant expression informs a physical marker selection—sadness is blue, hostility red.</p>
+          </article>
+          <article class="process-item">
+            <span class="number">04 — Draw</span>
+            <h3>Robotic gesture</h3>
+            <p>A robotic arm will translate the interpretation into movement and marks on paper.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="colors">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">03 / Color system</span>
+          <h2>Emotion has<br>more than one axis.</h2>
+          <p class="section-intro">Sadness is not hostility. Vulnerability is not aggression. Eight markers represent different modes of expression rather than a simple good-to-bad scale.</p>
+        </div>
+        <div class="palette" aria-label="The eight emotion-to-marker colors">
+          <div class="swatch"><div class="color-bar" style="background:var(--r1)"><span>01</span></div><strong>Dark red</strong><small>Extreme hostility</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r2)"><span>02</span></div><strong>Red</strong><small>Anger, attack</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r3)"><span>03</span></div><strong>Orange</strong><small>Heated conflict</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r4)"><span>04</span></div><strong>Yellow</strong><small>Tension, uncertainty</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r5)"><span>05</span></div><strong>Light green</strong><small>Neutral, reflective</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r6)"><span>06</span></div><strong>Green</strong><small>Warmth, support</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r7)"><span>07</span></div><strong>Blue</strong><small>Sadness, vulnerability</small></div>
+          <div class="swatch"><div class="color-bar" style="background:var(--r8)"><span>08</span></div><strong>Cyan</strong><small>Hope, connection</small></div>
+        </div>
+        <p class="footnote">The selection system is under active development. Interpretations and colors are expressive decisions made by the artwork, not objective assessments of a person.</p>
+      </div>
+    </section>
+
+    <section class="section" id="development">
+      <div class="wrap feature">
+        <div>
+          <div class="section-head">
+            <span class="eyebrow">04 / In development</span>
+            <h2>An artwork<br>taking shape.</h2>
+          </div>
+          <div class="feature-copy">
+            <p>The live conversation feed, sanitization, interpretation, and emotion-based color selection are being prototyped in Python. The Raspberry Pi and robotic arm are being prepared for an autonomous installation.</p>
+            <div class="sources" aria-label="Current conversation sources">
+              <span class="source-tag">🦣 Mastodon</span>
+              <span class="source-tag">🦋 Bluesky</span>
+              <span class="source-tag">🍀 4chan</span>
+              <span class="source-tag">8️⃣ 8kun</span>
+            </div>
+            <ul class="feature-points">
+              <li>Software torrent and AI interpretation: active prototype</li>
+              <li>Eight-color marker selection: active prototype</li>
+              <li>Physical drawing behaviors and gallery operation: in development</li>
+            </ul>
+            <a class="button alt" href="https://github.com/danamuise/ChatterFeed" rel="noopener noreferrer" target="_blank">View project on GitHub</a>
+          </div>
+        </div>
+        <figure class="media-shell">
+          <img src="https://raw.githubusercontent.com/danamuise/ChatterFeed/main/ChatterFeedImage01.png" alt="Early concept image for the robotic drawing artwork" loading="lazy">
+          <figcaption>Early concept image · Social Motion (formerly ChatterFeed)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="endline">
+      <div class="wrap endline-grid">
+        <div>
+          <span class="eyebrow">The project</span>
+          <h2>Language → Gesture → Trace</h2>
+          <p>A developing artwork about the emotional and physical presence of words in digital public space.</p>
+        </div>
+        <a class="button" href="#top">Back to top ↑</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <span>© 2026 Social Motion · Independent experimental artwork</span>
+      <span>Previously known as ChatterFeed · <a href="https://github.com/danamuise/ChatterFeed">Source code</a></span>
+    </div>
+  </footer>
+</body>
+</html>
