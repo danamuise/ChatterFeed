@@ -3,9 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Social Motion is an experimental artwork translating online discourse into robotic drawing gestures.">
-  <title>Social Motion</title>
+  <meta name="description" content="DOOMSCROLLER is an experimental artwork translating online discourse into robotic drawing gestures.">
+  <title>DOOMSCROLLER</title>
   <style>
+    @font-face {
+      font-family: "Color Basic";
+      src: url("data:font/woff2;base64,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") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     body {
       margin: 0;
       background: #fff;
@@ -18,10 +26,17 @@
       padding: 0 24px;
     }
     h1 {
-      font-size: 36px;
-      line-height: 1.2;
-      margin: 0 0 12px;
-      font-weight: 700;
+      font-family: "Color Basic", monospace;
+      font-size: clamp(22px, 5.4vw, 54px);
+      line-height: 1.35;
+      margin: 0 0 18px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+    .logo-inverse {
+      color: #fff;
+      background: #000;
+      padding: 0 .025em;
     }
     .subtitle {
       font-size: 22px;
@@ -70,12 +85,12 @@
 <body>
   <main>
     <header>
-      <h1>Social Motion</h1>
+      <h1 aria-label="DOOMSCROLLER">&lt;DOOM<span class="logo-inverse">SCROLLER</span>&gt;</h1>
       <p class="subtitle">What does online discourse look like in gestural form?</p>
       <figure>
-        <img src="ChatterFeedMasthead.jpg" alt="Social Motion project photograph" width="560" loading="eager">
+        <img src="ChatterFeedMasthead.jpg" alt="DOOMSCROLLER project photograph" width="560" loading="eager">
         <figcaption class="artwork-details">
-          <strong>Social Motion</strong>, 2026–ongoing<br>
+          <strong>DOOMSCROLLER</strong>, 2026–ongoing<br>
           Robotic drawing installation<br>
           Robotic arm, Raspberry Pi, custom software, AI language interpretation, colored markers, paper<br>
           Dimensions variable<br>
@@ -86,7 +101,7 @@
 
     <section>
       <h2>1. What am I trying to communicate?</h2>
-      <p>Words on the internet can seem temporary or inconsequential, but the way we speak to one another has real emotional weight. Social Motion explores what happens when online language takes on a physical presence.</p>
+      <p>Words on the internet can seem temporary or inconsequential, but the way we speak to one another has real emotional weight. DOOMSCROLLER explores what happens when online language takes on a physical presence.</p>
       <p>The project turns public online conversations into marks made by a robotic arm. Over time, those individual gestures accumulate into a drawing that reflects many kinds of human expression: hostility, humor, sadness, uncertainty, kindness, and hope.</p>
       <p>It is not an attempt to judge the people writing the posts. It is an interpretation of the language moving through a public space.</p>
     </section>
@@ -101,19 +116,19 @@
     <section>
       <h2>3. Who is the artist?</h2>
       <p>Dana Muise is an artist and technical artist based in the San Francisco Bay Area. He studied photography at the Rhode Island School of Design and has worked with animation, interactive media, and real-time graphics for many years.</p>
-      <p>Social Motion brings together his interests in visual art, software, robotics, and the ways people communicate.</p>
+      <p>DOOMSCROLLER brings together his interests in visual art, software, robotics, and the ways people communicate.</p>
     </section>
 
     <section>
       <h2>4. Technical aspects and privacy</h2>
-      <p>Social Motion is being developed in Python for a Raspberry Pi 4, with a Waveshare RoArm-M2-S robotic arm and an eight-marker carousel. AI interpretation is handled by an online service; the Pi will coordinate the display and drawing hardware.</p>
+      <p>DOOMSCROLLER is being developed in Python for a Raspberry Pi 4, with a Waveshare RoArm-M2-S robotic arm and an eight-marker carousel. AI interpretation is handled by an online service; the Pi will coordinate the display and drawing hardware.</p>
       <p>The project samples publicly accessible text and does not seek to identify or profile its authors. Posts are displayed without usernames, and offensive language is redacted before appearing in the feed. The software does not intentionally maintain a permanent archive of the sampled conversations.</p>
       <p>This is a non-commercial artwork in development, intended for temporary exhibition.</p>
     </section>
 
     <section>
       <h2>5. The Installation</h2>
-      <p>Social Motion is intended to operate continuously within an exhibition space. A screen presents a changing stream of public online conversations while a robotic arm translates selected messages into marks on paper.</p>
+      <p>DOOMSCROLLER is intended to operate continuously within an exhibition space. A screen presents a changing stream of public online conversations while a robotic arm translates selected messages into marks on paper.</p>
       <p>The work unfolds gradually. Visitors can observe the relationship between the language appearing on the screen and the physical gestures produced by the machine. Individual marks accumulate over time, eventually forming a drawing shaped by conversations taking place elsewhere.</p>
       <p>The installation does not require audience participation. Its activity continues whether or not anyone is watching.</p>
     </section>
