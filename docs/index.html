@@ -76,6 +76,16 @@
       margin: 20px 0 8px 50%;
       transform: translateX(-50%);
     }
+    .artist-section {
+      display: flow-root;
+    }
+    .artist-photo {
+      float: right;
+      width: min(260px, 40%);
+      max-width: none;
+      height: auto;
+      margin: 2px 0 16px 24px;
+    }
     .artwork-details {
       max-width: 560px;
       font-size: 14px;
@@ -99,6 +109,12 @@
       font-size: 14px;
     }
     @media (max-width: 600px) {
+      .artist-photo {
+        float: none;
+        width: min(260px, 100%);
+        margin: 2px 0 18px;
+      }
+
       main { margin: 32px auto 55px; padding: 0 18px; }
       h1 { font-size: clamp(21px, 5.4vw, 30px); }
       .subtitle { font-size: 19px; }
@@ -135,8 +151,9 @@
       <img class="workflow-image" src="doomscroller_ai_workflow.png" alt="DOOMSCROLLER workflow diagram showing public social media feeding AI sanitization and emotion interpretation, followed by color selection and robotic drawing" width="600" loading="lazy">
     </section>
 
-    <section>
-      <h2>3. Who is the artist?</h2>
+    <section class="artist-section">
+      <h2>3. About the Artist</h2>
+      <img class="artist-photo" src="Dana_small.png" alt="Portrait of artist Dana Muise" width="260" loading="lazy">
       <p>Dana Muise is an artist and technical artist based in the San Francisco Bay Area. He studied photography at the Rhode Island School of Design and has worked with animation, interactive media, and real-time graphics for many years.</p>
       <p>DOOMSCROLLER brings together his interests in visual art, software, robotics, and the ways people communicate.</p>
     </section>
