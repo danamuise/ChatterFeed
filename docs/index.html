@@ -53,6 +53,12 @@
     figure {
       margin: 0 0 34px;
     }
+    .prototype-image {
+      width: min(860px, calc(100vw - 36px));
+      max-width: none;
+      margin: 0 0 12px 50%;
+      transform: translateX(-50%);
+    }
     .workflow-image {
       display: block;
       width: min(600px, calc(100vw - 36px));
@@ -96,7 +102,7 @@
       <h1 aria-label="DOOMSCROLLER">&lt;DOOM<span class="logo-inverse">SCROLLER</span>&gt;</h1>
       <p class="subtitle">What does social media discourse look like?</p>
       <figure>
-        <img src="Doomscroller_protoImage.png" alt="DOOMSCROLLER project photograph" width="860" loading="eager">
+        <img class="prototype-image" src="Doomscroller_protoImage.png" alt="DOOMSCROLLER project photograph" width="860" loading="eager">
         <figcaption class="artwork-details">
           <strong>DOOMSCROLLER</strong>, 2026–ongoing<br>
           Robotic drawing installation<br>
