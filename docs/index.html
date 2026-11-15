@@ -80,11 +80,11 @@
       display: flow-root;
     }
     .artist-photo {
-      float: right;
+      float: left;
       width: min(260px, 40%);
       max-width: none;
       height: auto;
-      margin: 2px 0 16px 24px;
+      margin: 2px 24px 16px 0;
     }
     .artwork-details {
       max-width: 560px;
@@ -110,9 +110,9 @@
     }
     @media (max-width: 600px) {
       .artist-photo {
-        float: none;
-        width: min(260px, 100%);
-        margin: 2px 0 18px;
+        float: left;
+        width: min(220px, 40%);
+        margin: 2px 16px 12px 0;
       }
 
       main { margin: 32px auto 55px; padding: 0 18px; }
